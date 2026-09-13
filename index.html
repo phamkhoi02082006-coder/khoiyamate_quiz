@@ -3,22 +3,40 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hệ Thống Trắc Nghiệm Tiếng Nhật - Firebase</title>
+  <title>Trắc Nghiệm Tiếng Nhật</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-100 font-sans min-h-screen pb-10">
 
-  <!-- NAVBAR -->
-  <nav class="bg-slate-800 text-white p-4 shadow-md flex justify-between items-center px-6">
-    <h1 class="text-xl font-bold flex items-center gap-2">KHOIYAMATE</h1>
-    <div class="flex items-center gap-3">
-      <button onclick="resetData()" class="bg-amber-500 hover:bg-amber-600 px-3 py-1.5 rounded-lg text-sm font-semibold transition">
-        🗑️ Reset Dữ Liệu
+<!-- NAVBAR -->
+  <nav class="bg-slate-800 text-white p-4 shadow-md flex justify-between items-center px-6 relative">
+    <div class="flex flex-col">
+      <h1 class="text-xl font-bold">KHOIYAMATE</h1>
+      <span id="user-info" class="text-xs text-slate-300 mt-0.5"></span>
+    </div>
+    
+    <!-- MENU 3 GẠCH & DROPDOWN -->
+    <div class="relative">
+      <button onclick="toggleDropdown()" class="p-2 rounded-lg bg-slate-700 hover:bg-slate-600 transition text-white focus:outline-none flex items-center justify-center">
+        <!-- Icon 3 gạch -->
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
       </button>
-      <span id="user-info" class="text-sm font-medium"></span>
-      <button id="logout-btn" onclick="handleLogout()" class="hidden bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-lg text-sm font-semibold transition">
-        Đăng Xuất
-      </button>
+
+      <!-- Hộp menu thả xuống -->
+      <div id="dropdown-menu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg py-2 z-50 text-slate-800 border">
+        <!-- Nút Đổi Mật Khẩu được thêm vào đây -->
+        <button onclick="openChangePasswordModal(); toggleDropdown();" class="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-100 flex items-center gap-2">
+          🔑 Đổi Mật Khẩu
+        </button>
+        <button onclick="resetData(); toggleDropdown();" class="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-100 flex items-center gap-2">
+          🗑️ Xóa Dữ Liệu
+        </button>
+        <button id="logout-btn" onclick="handleLogout(); toggleDropdown();" class="hidden w-full text-left px-4 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 flex items-center gap-2">
+          🚪 Đăng Xuất
+        </button>
+      </div>
     </div>
   </nav>
 
@@ -66,6 +84,38 @@
         Tạo tài khoản
       </button>
     </form>
+  </div>
+
+  <!-- MODAL ĐỔI MẬT KHẨU -->
+  <div id="change-password-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-lg max-w-md w-full p-6 space-y-4">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h3 class="font-bold text-lg text-slate-800">🔑 Đổi Mật Khẩu Mới</h3>
+        <button onclick="closeChangePasswordModal()" class="text-gray-500 hover:text-black font-bold">✕</button>
+      </div>
+      <form onsubmit="handleChangePassword(event)" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium mb-1">Mật khẩu hiện tại</label>
+          <input type="password" id="current-password" required class="w-full border p-2.5 rounded-lg focus:ring-2 focus:ring-red-500 outline-none" placeholder="Nhập mật khẩu cũ...">
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Mật khẩu mới</label>
+          <input type="password" id="new-password" required class="w-full border p-2.5 rounded-lg focus:ring-2 focus:ring-red-500 outline-none" placeholder="Ít nhất 6 ký tự...">
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Xác nhận mật khẩu mới</label>
+          <input type="password" id="confirm-password" required class="w-full border p-2.5 rounded-lg focus:ring-2 focus:ring-red-500 outline-none" placeholder="Nhập lại mật khẩu mới...">
+        </div>
+        <div class="flex gap-3 pt-2">
+          <button type="submit" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-lg transition">
+            Xác Nhận Đổi
+          </button>
+          <button type="button" onclick="closeChangePasswordModal()" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold px-4 py-2.5 rounded-lg transition">
+            Hủy
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
 
   <!-- DASHBOARD CHÍNH -->
@@ -252,6 +302,32 @@
   </div>
 
   <script type="module">
+    // Hàm ẩn/hiện menu 3 gạch
+    function toggleDropdown() {
+      const menu = document.getElementById('dropdown-menu');
+      menu.classList.toggle('hidden');
+    }
+
+    // Các hàm mở/đóng Modal Đổi Mật Khẩu
+    function openChangePasswordModal() {
+      document.getElementById('change-password-modal').classList.remove('hidden');
+    }
+
+    function closeChangePasswordModal() {
+      document.getElementById('change-password-modal').classList.add('hidden');
+      // Reset form đổi mật khẩu nếu có
+      const form = document.querySelector('#change-password-modal form');
+      if (form) form.reset();
+    }
+
+    // Đóng menu khi người dùng bấm ra ngoài màn hình
+    window.addEventListener('click', function(e) {
+      const menu = document.getElementById('dropdown-menu');
+      const btn = menu?.previousElementSibling;
+      if (menu && !menu.contains(e.target) && !btn.contains(e.target)) {
+        menu.classList.add('hidden');
+      }
+    });
     // ============================================================
     // FIREBASE CONFIG - DÁN CONFIG CỦA BẠN VÀO ĐÂY
     // Firebase Console -> Project settings -> Your apps -> Web app
@@ -262,7 +338,10 @@
       createUserWithEmailAndPassword,
       signInWithEmailAndPassword,
       onAuthStateChanged,
-      signOut
+      signOut,
+      EmailAuthProvider,
+      reauthenticateWithCredential,
+      updatePassword
     } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
     import {
       getFirestore,
@@ -317,8 +396,8 @@
       { jp: "ハ", lat: "ha" }, { jp: "ヒ", lat: "hi" }, { jp: "フ", lat: "fu" }, { jp: "ヘ", lat: "he" }, { jp: "ホ", lat: "ho" },
       { jp: "マ", lat: "ma" }, { jp: "ミ", lat: "mi" }, { jp: "ム", lat: "mu" }, { jp: "メ", lat: "me" }, { jp: "モ", lat: "mo" },
       { jp: "ヤ", lat: "ya" }, { jp: "ユ", lat: "yu" }, { jp: "ヨ", lat: "yo" },
-      { jp: "ら", lat: "ra" }, { jp: "り", lat: "ri" }, { jp: "る", lat: "ru" }, { jp: "れ", lat: "re" }, { jp: "ろ", lat: "ro" },
-      { jp: "わ", lat: "wa" }, { jp: "ヲ", lat: "wo" }, { jp: "ン", lat: "n" }
+      { jp: "ラ", lat: "ra" }, { jp: "り", lat: "ri" }, { jp: "ル", lat: "ru" }, { jp: "レ", lat: "re" }, { jp: "ロ", lat: "ro" },
+      { jp: "ワ", lat: "wa" }, { jp: "ヲ", lat: "wo" }, { jp: "ン", lat: "n" }
     ];
 
     // 2. BIẾN TOÀN CỤC
@@ -397,6 +476,44 @@
       }
     }
 
+    // Xử lý đổi mật khẩu
+    async function handleChangePassword(e) {
+      e.preventDefault();
+      const currentPassword = document.getElementById('current-password').value;
+      const newPassword = document.getElementById('new-password').value;
+      const confirmPassword = document.getElementById('confirm-password').value;
+
+      if (newPassword.length < 6) {
+        alert("Mật khẩu mới phải có ít nhất 6 ký tự.");
+        return;
+      }
+
+      if (newPassword !== confirmPassword) {
+        alert("Xác nhận mật khẩu mới không khớp.");
+        return;
+      }
+
+      const user = auth.currentUser;
+      if (!user || !user.email) {
+        alert("Bạn chưa đăng nhập.");
+        return;
+      }
+
+      try {
+        // Xác thực lại tài khoản trước khi đổi mật khẩu (yêu cầu bảo mật của Firebase)
+        const credential = EmailAuthProvider.credential(user.email, currentPassword);
+        await reauthenticateWithCredential(user, credential);
+
+        // Cập nhật mật khẩu mới
+        await updatePassword(user, newPassword);
+        alert("Đổi mật khẩu thành công!");
+        closeChangePasswordModal();
+      } catch (error) {
+        console.error(error);
+        alert(getFirebaseError(error));
+      }
+    }
+
     async function handleLogout() {
       clearInterval(timerInterval);
       if (quizUnsubscribe) quizUnsubscribe();
@@ -409,6 +526,7 @@
       const code = error?.code || "";
       const map = {
         "auth/invalid-credential": "Email hoặc mật khẩu không đúng.",
+        "auth/wrong-password": "Mật khẩu hiện tại không chính xác.",
         "auth/email-already-in-use": "Email này đã được đăng ký.",
         "auth/invalid-email": "Email không hợp lệ.",
         "auth/weak-password": "Mật khẩu quá yếu. Hãy dùng ít nhất 6 ký tự.",
@@ -506,7 +624,7 @@
           <div class="bg-red-50 border border-red-200 p-4 rounded-xl flex flex-col justify-between">
             <div>
               <span class="text-xs font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded">Mặc định</span>
-              <h3 class="font-bold text-lg text-slate-800 mt-1">Bảng chữ cái Hiragana (平仮名)</h3>
+              <h3 class="font-bold text-lg text-slate-800 mt-1">Bảng chữ cái Hiragana</h3>
               <p class="text-sm text-gray-600"> 46 câu hỏi chữ cái cơ bản.</p>
             </div>
             <button onclick="openConfigModal('hiragana')" class="mt-4 w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded-lg transition">
@@ -517,7 +635,7 @@
           <div class="bg-blue-50 border border-blue-200 p-4 rounded-xl flex flex-col justify-between">
             <div>
               <span class="text-xs font-bold text-blue-600 bg-blue-100 px-2 py-0.5 rounded">Mặc định</span>
-              <h3 class="font-bold text-lg text-slate-800 mt-1">Bảng chữ cái Katakana (片仮名)</h3>
+              <h3 class="font-bold text-lg text-slate-800 mt-1">Bảng chữ cái Katakana</h3>
               <p class="text-sm text-gray-600"> 46 câu hỏi chữ cái cơ bản.</p>
             </div>
             <button onclick="openConfigModal('katakana')" class="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg transition">
@@ -823,7 +941,7 @@
             <div class="flex justify-between items-center p-3 bg-red-50 border border-red-200 rounded-lg">
               <div>
                 <span class="text-xs font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded">Mặc định</span>
-                <p class="font-bold text-sm text-slate-800">Bảng chữ cái Hiragana (平仮名)</p>
+                <p class="font-bold text-sm text-slate-800">Bảng chữ cái Hiragana</p>
                 <p class="text-xs text-gray-500">Số câu: 46 câu | Trạng thái: Có sẵn</p>
               </div>
               <button onclick="previewDefaultQuiz('hiragana')" class="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-3 py-1.5 rounded transition">
@@ -834,7 +952,7 @@
             <div class="flex justify-between items-center p-3 bg-blue-50 border border-blue-200 rounded-lg">
               <div>
                 <span class="text-xs font-bold text-blue-600 bg-blue-100 px-2 py-0.5 rounded">Mặc định</span>
-                <p class="font-bold text-sm text-slate-800">Bảng chữ cái Katakana (片仮名)</p>
+                <p class="font-bold text-sm text-slate-800">Bảng chữ cái Katakana</p>
                 <p class="text-xs text-gray-500">Số câu: 46 câu | Trạng thái: Có sẵn</p>
               </div>
               <button onclick="previewDefaultQuiz('katakana')" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-1.5 rounded transition">
@@ -859,7 +977,7 @@
                 </div>
                 <div class="flex items-center gap-2">
                   <button onclick="toggleQuizStatus('${quiz.id}')" class="text-xs font-semibold px-2.5 py-1.5 rounded border transition ${isPublished ? 'bg-amber-100 hover:bg-amber-200 text-amber-800 border-amber-300' : 'bg-green-100 hover:bg-green-200 text-green-800 border-green-300'}">
-                    ${isPublished ? 'Ẩn đề này' : 'Gửi'}
+                    ${isPublished ? 'Ẩn' : 'Duyệt'}
                   </button>
                   <button onclick="editCustomQuiz('${quiz.id}')" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-1.5 rounded transition">
                     Sửa
@@ -1228,12 +1346,16 @@
         .replaceAll("'", "&#039;");
     }
 
-    // Cho onclick trong HTML gọi được các hàm trong module.
+    // Đưa các hàm ra scope global để gọi từ HTML bên ngoài module script
     Object.assign(window, {
       switchTab,
       handleLogin,
       handleRegister,
+      handleChangePassword,
+      openChangePasswordModal,
+      closeChangePasswordModal,
       handleLogout,
+      toggleDropdown,
       openConfigModal,
       toggleTimeInput,
       confirmStartQuiz,
@@ -1243,15 +1365,15 @@
       submitQuiz,
       backToQuizList,
       toggleQuizStatus,
+      editCustomQuiz,
+      cancelEditQuiz,
+      deleteCustomQuiz,
       previewDefaultQuiz,
       previewCustomQuiz,
       closeAdminPreview,
       addQuestionField,
       removeQuestionField,
-      handleCreateQuiz,
-      deleteCustomQuiz,
-      editCustomQuiz,
-      cancelEditQuiz
+      handleCreateQuiz
     });
 
     // 8. FIREBASE AUTH STATE
