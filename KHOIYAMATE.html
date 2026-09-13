@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hệ Thống Trắc Nghiệm Tiếng Nhật - Firebase</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 font-sans min-h-screen pb-10">
+
+  <!-- NAVBAR -->
+  <nav class="bg-slate-800 text-white p-4 shadow-md flex justify-between items-center px-6">
+    <h1 class="text-xl font-bold flex items-center gap-2">KHOIYAMATE</h1>
+    <div class="flex items-center gap-3">
+      <button onclick="resetData()" class="bg-amber-500 hover:bg-amber-600 px-3 py-1.5 rounded-lg text-sm font-semibold transition">
+        🗑️ Reset Dữ Liệu
+      </button>
+      <span id="user-info" class="text-sm font-medium"></span>
+      <button id="logout-btn" onclick="handleLogout()" class="hidden bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-lg text-sm font-semibold transition">
+        Đăng Xuất
+      </button>
+    </div>
+  </nav>
+
+  <!-- FORM DANG NHAP / DANG KY -->
+  <div class="max-w-md mx-auto my-10 p-6 bg-white rounded-xl shadow-md" id="auth-container">
+    <div class="flex border-b mb-6">
+      <button id="tab-login-btn" onclick="switchTab('login')" class="w-1/2 py-2 font-bold text-center border-b-2 border-red-600 text-red-600">
+        Đăng Nhập
+      </button>
+      <button id="tab-register-btn" onclick="switchTab('register')" class="w-1/2 py-2 font-bold text-center text-gray-500 hover:text-red-600">
+        Đăng Ký
+      </button>
+    </div>
+
+    <!-- FORM ĐĂNG NHẬP -->
+    <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium mb-1">Email</label>
+        <input type="email" id="login-email" required class="w-full border p-2.5 rounded-lg focus:ring-2 focus:ring-red-500 outline-none">
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">Mật khẩu</label>
+        <input type="password" id="login-password" required class="w-full border p-2.5 rounded-lg focus:ring-2 focus:ring-red-500 outline-none">
+      </div>
+      <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-lg shadow transition">
+        Đăng Nhập
+      </button>
+    </form>
+
+    <!-- FORM ĐĂNG KÝ -->
+    <form id="register-form" onsubmit="handleRegister(event)" class="space-y-4 hidden">
+      <div>
+        <label class="block text-sm font-medium mb-1">Họ và Tên</label>
+        <input type="text" id="reg-name" required class="w-full border p-2.5 rounded-lg focus:ring-2 focus:ring-red-500 outline-none">
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">Email</label>
+        <input type="email" id="reg-email" required class="w-full border p-2.5 rounded-lg focus:ring-2 focus:ring-red-500 outline-none">
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">Mật khẩu</label>
+        <input type="password" id="reg-password" required class="w-full border p-2.5 rounded-lg focus:ring-2 focus:ring-red-500 outline-none">
+      </div>
+      <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 rounded-lg shadow transition">
+        Tạo tài khoản
+      </button>
+    </form>
+  </div>
+
+  <!-- DASHBOARD CHÍNH -->
+  <div id="dashboard" class="max-w-4xl mx-auto my-6 p-6 bg-white rounded-xl shadow-md hidden">
+    
+    <!-- GIAO DIỆN USER (HỌC SINH) -->
+    <div id="user-view" class="hidden space-y-6">
+      
+      <!-- 1. Danh sách đề thi -->
+      <div id="quiz-list-screen" class="space-y-6">
+        <h2 class="text-2xl font-bold text-slate-800">Danh Sách Đề Thi</h2>
+        
+        <div id="available-quizzes-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+
+        <!-- Lịch sử làm bài -->
+        <h3 class="font-bold text-lg pt-4 border-t">📜 Lịch Sử Làm Bài</h3>
+        <div id="history-list" class="space-y-2 text-sm text-gray-600"></div>
+      </div>
+
+      <!-- 2. Modal/Màn hình Tùy chỉnh Đề thi mặc định -->
+      <div id="quiz-config-screen" class="hidden space-y-6 bg-slate-50 p-6 rounded-xl border">
+        <h2 class="text-xl font-bold text-slate-800 border-b pb-2" id="config-quiz-title">Cấu Hình Đề Thi</h2>
+        
+        <form onsubmit="confirmStartQuiz(event)" class="space-y-4 max-w-lg">
+          <div>
+            <label class="block text-sm font-semibold mb-1">Kiểu câu hỏi</label>
+            <select id="cfg-type" class="w-full border p-2.5 rounded-lg outline-none bg-white">
+              <option value="jp-lat">Nhật -> Latinh (Ví dụ: あ -> a)</option>
+              <option value="lat-jp">Latinh -> Nhật (Ví dụ: a -> あ)</option>
+              <option value="random">Ngẫu nhiên</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold mb-1">
+              Số lượng câu hỏi <span id="cfg-max-q" class="text-xs text-gray-500 font-normal"></span>
+            </label>
+            <input type="number" id="cfg-count" required min="1" class="w-full border p-2.5 rounded-lg outline-none">
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold mb-1">Thời gian làm bài</label>
+            <div class="flex items-center gap-4">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="time-opt" value="none" checked onchange="toggleTimeInput(false)">
+                <span class="text-sm">Không tính thời gian</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="time-opt" value="custom" onchange="toggleTimeInput(true)">
+                <span class="text-sm">Tùy chỉnh (phút)</span>
+              </label>
+            </div>
+            <input type="number" id="cfg-time-minutes" min="1" value="5" class="w-full border p-2.5 rounded-lg outline-none mt-2 hidden" placeholder="Nhập số phút...">
+          </div>
+
+          <div class="flex gap-3 pt-2">
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-2.5 rounded-lg transition">
+              Bắt Đầu Làm Bài
+            </button>
+            <button type="button" onclick="backToQuizList()" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold px-5 py-2.5 rounded-lg transition">
+              Hủy Bỏ
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- 3. Màn hình làm bài -->
+      <div id="quiz-taking-screen" class="hidden space-y-6">
+        <div class="flex justify-between items-center border-b pb-3">
+          <div>
+            <h2 class="text-xl font-bold text-slate-800" id="taking-quiz-title">Đang Làm Bài</h2>
+            <span id="timer-display" class="text-sm font-bold text-red-600 block mt-1"></span>
+          </div>
+          <span id="question-tracker" class="font-semibold text-blue-600"></span>
+        </div>
+
+        <div id="quiz-questions-container" class="space-y-6"></div>
+
+        <div class="flex gap-4">
+          <button onclick="submitQuiz()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg shadow transition">
+            Nộp Bài
+          </button>
+          <button onclick="cancelQuiz()" class="w-1/3 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-3 rounded-lg transition">
+            Hủy Bỏ
+          </button>
+        </div>
+      </div>
+
+      <!-- 4. Màn hình kết quả & Xem lại câu sai -->
+      <div id="quiz-result-screen" class="hidden space-y-6 py-6">
+        <div class="text-center space-y-3">
+          <h2 class="text-3xl font-bold text-slate-800">🎉 Kết Quả Bài Thi</h2>
+          <div class="text-5xl font-black text-blue-600" id="final-score">0 / 0</div>
+          <p class="text-gray-600 text-lg" id="result-message"></p>
+        </div>
+
+        <!-- Chi tiết đáp án đúng / sai -->
+        <div class="border-t pt-4 space-y-4">
+          <h3 class="font-bold text-xl text-slate-800">📋 Chi Tiết Bài Làm & Đáp Án</h3>
+          <div id="result-details-container" class="space-y-4"></div>
+        </div>
+
+        <div class="text-center pt-4">
+          <button onclick="backToQuizList()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold px-6 py-3 rounded-lg">
+            Quay Lại Danh Sách
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- GIAO DIỆN ADMIN (QUẢN LÝ VÀ TỰ TẠO ĐỀ THI) -->
+    <div id="admin-view" class="hidden space-y-6">
+      <h2 id="admin-form-heading" class="text-2xl font-bold text-slate-800">Tạo Đề Thi Mới</h2>
+      
+      <!-- Form Tự Tạo / Chỉnh Sửa Đề Thi -->
+      <form onsubmit="handleCreateQuiz(event)" class="bg-slate-50 p-5 border rounded-xl space-y-4">
+        <h3 id="admin-form-subheading" class="font-bold text-lg text-slate-700 border-b pb-2">Đề Thi Mới</h3>
+        
+        <div>
+          <label class="block text-sm font-semibold mb-1">Tên đề thi</label>
+          <input type="text" id="admin-quiz-title" required class="w-full border p-2.5 rounded-lg text-sm outline-none" placeholder="Ví dụ: Đề thi N5 Chuẩn...">
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-semibold mb-1">Số câu hỏi dự kiến</label>
+            <input type="number" id="admin-quiz-limit" required min="1" class="w-full border p-2.5 rounded-lg text-sm outline-none" placeholder="Số câu tối đa...">
+          </div>
+          <div>
+            <label class="block text-sm font-semibold mb-1">Thời gian làm bài (Phút)</label>
+            <input type="number" id="admin-quiz-time" min="0" placeholder="0 = Không giới hạn" class="w-full border p-2.5 rounded-lg text-sm outline-none">
+          </div>
+        </div>
+
+        <!-- TÙY CHỌN CHẾ ĐỘ LƯU -->
+        <div>
+          <label class="block text-sm font-semibold mb-1">Chế độ xuất bản cho học viên</label>
+          <select id="admin-quiz-status" class="w-full border p-2.5 rounded-lg text-sm outline-none bg-white font-medium">
+            <option value="draft">Lưu (Học viên KHÔNG thể xem)</option>
+            <option value="published">Lưu và gửi (Hiển thị ngay cho học viên làm bài)</option>
+          </select>
+        </div>
+
+        <!-- Danh sách câu hỏi tự soạn trong đề -->
+        <div class="space-y-3 pt-2">
+          <div class="flex justify-between items-center">
+            <h4 class="font-bold text-sm text-slate-700">Danh Sách Câu Hỏi & Đáp Án</h4>
+            <button type="button" onclick="addQuestionField()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs px-3 py-1.5 rounded transition">
+              + Thêm Câu Hỏi
+            </button>
+          </div>
+          
+          <div id="admin-questions-inputs" class="space-y-4"></div>
+        </div>
+
+        <div class="flex gap-3">
+          <button type="submit" id="admin-submit-btn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow transition">
+            Lưu Đề Thi 
+          </button>
+          <button type="button" id="admin-cancel-edit-btn" onclick="cancelEditQuiz()" class="hidden bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold px-5 py-3 rounded-lg transition">
+            Hủy Sửa
+          </button>
+        </div>
+      </form>
+
+      <!-- Danh sách tất cả đề thi trong hệ thống (Default + Custom) -->
+      <h3 class="font-bold text-lg border-b pb-2">📋 Các Đề Thi Đã Lưu</h3>
+      <div id="admin-custom-quizzes-list" class="space-y-3"></div>
+
+      <!-- Modal/Khu vực xem chi tiết đáp án của Admin -->
+      <div id="admin-quiz-preview-modal" class="hidden border rounded-xl p-5 bg-slate-50 space-y-4">
+        <div class="flex justify-between items-center border-b pb-2">
+          <h3 class="font-bold text-lg text-slate-800" id="preview-modal-title">Xem Chi Tiết Đề Thi</h3>
+          <button onclick="closeAdminPreview()" class="text-gray-500 hover:text-black font-bold">✕ Đóng</button>
+        </div>
+        <div id="preview-modal-content" class="space-y-3 max-h-96 overflow-y-auto pr-2 text-sm"></div>
+      </div>
+
+      <!-- Khu vực xem điểm / kết quả bài làm của học viên dành cho Admin -->
+      <h3 class="font-bold text-lg border-b pb-2 pt-4">📊 Điểm & Kết Quả Bài Làm Của Học Viên</h3>
+      <div id="admin-results-list" class="space-y-2 text-sm text-gray-600 max-h-96 overflow-y-auto pr-2"></div>
+    </div>
+
+  </div>
+
+  <script type="module">
+    // ============================================================
+    // FIREBASE CONFIG - DÁN CONFIG CỦA BẠN VÀO ĐÂY
+    // Firebase Console -> Project settings -> Your apps -> Web app
+    // ============================================================
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+    import {
+      getAuth,
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword,
+      onAuthStateChanged,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      doc,
+      getDoc,
+      setDoc,
+      updateDoc,
+      deleteDoc,
+      query,
+      where,
+      onSnapshot,
+      serverTimestamp,
+      orderBy,
+      getDocs
+    } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAYPuE4iMd3WY4CYwllgJrOYL_MozXwQxw",
+      authDomain: "khoiyamate-76664.firebaseapp.com",
+      projectId: "khoiyamate-76664",
+      storageBucket: "khoiyamate-76664.firebasestorage.app",
+      messagingSenderId: "744589296664",
+      appId: "1:744589296664:web:750c7a1bba35adbce86f6d"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // 1. KHO DỮ LIỆU CHỮ CÁI MẶC ĐỊNH
+    const hiraganaData = [
+      { jp: "あ", lat: "a" }, { jp: "い", lat: "i" }, { jp: "う", lat: "u" }, { jp: "え", lat: "e" }, { jp: "お", lat: "o" },
+      { jp: "か", lat: "ka" }, { jp: "き", lat: "ki" }, { jp: "く", lat: "ku" }, { jp: "け", lat: "ke" }, { jp: "こ", lat: "ko" },
+      { jp: "さ", lat: "sa" }, { jp: "し", lat: "shi" }, { jp: "す", lat: "su" }, { jp: "せ", lat: "se" }, { jp: "そ", lat: "so" },
+      { jp: "た", lat: "ta" }, { jp: "ち", lat: "chi" }, { jp: "つ", lat: "tsu" }, { jp: "て", lat: "te" }, { jp: "と", lat: "to" },
+      { jp: "な", lat: "na" }, { jp: "に", lat: "ni" }, { jp: "ぬ", lat: "nu" }, { jp: "ね", lat: "ne" }, { jp: "の", lat: "no" },
+      { jp: "は", lat: "ha" }, { jp: "ひ", lat: "hi" }, { jp: "ふ", lat: "fu" }, { jp: "へ", lat: "he" }, { jp: "ほ", lat: "ho" },
+      { jp: "ま", lat: "ma" }, { jp: "み", lat: "mi" }, { jp: "む", lat: "mu" }, { jp: "め", lat: "me" }, { jp: "も", lat: "mo" },
+      { jp: "や", lat: "ya" }, { jp: "ゆ", lat: "yu" }, { jp: "よ", lat: "yo" },
+      { jp: "ら", lat: "ra" }, { jp: "り", lat: "ri" }, { jp: "る", lat: "ru" }, { jp: "れ", lat: "re" }, { jp: "ろ", lat: "ro" },
+      { jp: "わ", lat: "wa" }, { jp: "を", lat: "wo" }, { jp: "ん", lat: "n" }
+    ];
+
+    const katakanaData = [
+      { jp: "ア", lat: "a" }, { jp: "イ", lat: "i" }, { jp: "ウ", lat: "u" }, { jp: "エ", lat: "e" }, { jp: "オ", lat: "o" },
+      { jp: "カ", lat: "ka" }, { jp: "キ", lat: "ki" }, { jp: "ク", lat: "ku" }, { jp: "ケ", lat: "ke" }, { jp: "コ", lat: "ko" },
+      { jp: "サ", lat: "sa" }, { jp: "シ", lat: "shi" }, { jp: "ス", lat: "su" }, { jp: "セ", lat: "se" }, { jp: "ソ", lat: "so" },
+      { jp: "タ", lat: "ta" }, { jp: "チ", lat: "chi" }, { jp: "ツ", lat: "tsu" }, { jp: "テ", lat: "te" }, { jp: "ト", lat: "to" },
+      { jp: "ナ", lat: "na" }, { jp: "ニ", lat: "ni" }, { jp: "ヌ", lat: "nu" }, { jp: "ネ", lat: "ne" }, { jp: "ノ", lat: "no" },
+      { jp: "ハ", lat: "ha" }, { jp: "ヒ", lat: "hi" }, { jp: "フ", lat: "fu" }, { jp: "ヘ", lat: "he" }, { jp: "ホ", lat: "ho" },
+      { jp: "マ", lat: "ma" }, { jp: "ミ", lat: "mi" }, { jp: "ム", lat: "mu" }, { jp: "メ", lat: "me" }, { jp: "モ", lat: "mo" },
+      { jp: "ヤ", lat: "ya" }, { jp: "ユ", lat: "yu" }, { jp: "ヨ", lat: "yo" },
+      { jp: "ら", lat: "ra" }, { jp: "り", lat: "ri" }, { jp: "る", lat: "ru" }, { jp: "れ", lat: "re" }, { jp: "ろ", lat: "ro" },
+      { jp: "わ", lat: "wa" }, { jp: "ヲ", lat: "wo" }, { jp: "ン", lat: "n" }
+    ];
+
+    // 2. BIẾN TOÀN CỤC
+    let currentUser = null;
+    let selectedQuiz = null;
+    let selectedCustomQuiz = null;
+    let activeQuestions = [];
+    let userAnswers = {};
+    let timerInterval = null;
+    let timeLeft = 0;
+    let questionCounter = 0;
+    let quizUnsubscribe = null;
+    let adminQuizUnsubscribe = null;
+    let adminResultsUnsubscribe = null;
+    let editingQuizId = null; // Biến lưu ID đề thi đang được chỉnh sửa
+
+    // 3. UI / AUTH
+    function switchTab(tab) {
+      const loginForm = document.getElementById('login-form');
+      const registerForm = document.getElementById('register-form');
+      const tabLoginBtn = document.getElementById('tab-login-btn');
+      const tabRegisterBtn = document.getElementById('tab-register-btn');
+
+      if (tab === 'login') {
+        loginForm.classList.remove('hidden');
+        registerForm.classList.add('hidden');
+        tabLoginBtn.className = "w-1/2 py-2 font-bold text-center border-b-2 border-red-600 text-red-600";
+        tabRegisterBtn.className = "w-1/2 py-2 font-bold text-center text-gray-500 hover:text-red-600";
+      } else {
+        loginForm.classList.add('hidden');
+        registerForm.classList.remove('hidden');
+        tabRegisterBtn.className = "w-1/2 py-2 font-bold text-center border-b-2 border-red-600 text-red-600";
+        tabLoginBtn.className = "w-1/2 py-2 font-bold text-center text-gray-500 hover:text-red-600";
+      }
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value;
+
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+      } catch (error) {
+        console.error(error);
+        alert(getFirebaseError(error));
+      }
+    }
+
+    async function handleRegister(e) {
+      e.preventDefault();
+      const name = document.getElementById('reg-name').value.trim();
+      const email = document.getElementById('reg-email').value.trim();
+      const password = document.getElementById('reg-password').value;
+
+      if (password.length < 6) {
+        alert("Mật khẩu phải có ít nhất 6 ký tự.");
+        return;
+      }
+
+      try {
+        const credential = await createUserWithEmailAndPassword(auth, email, password);
+        await setDoc(doc(db, "users", credential.user.uid), {
+          uid: credential.user.uid,
+          name,
+          email,
+          role: "user",
+          createdAt: serverTimestamp()
+        });
+
+        alert("Đăng ký thành công!");
+        document.getElementById('register-form').reset();
+      } catch (error) {
+        console.error(error);
+        alert(getFirebaseError(error));
+      }
+    }
+
+    async function handleLogout() {
+      clearInterval(timerInterval);
+      if (quizUnsubscribe) quizUnsubscribe();
+      if (adminQuizUnsubscribe) adminQuizUnsubscribe();
+      if (adminResultsUnsubscribe) adminResultsUnsubscribe();
+      await signOut(auth);
+    }
+
+    function getFirebaseError(error) {
+      const code = error?.code || "";
+      const map = {
+        "auth/invalid-credential": "Email hoặc mật khẩu không đúng.",
+        "auth/email-already-in-use": "Email này đã được đăng ký.",
+        "auth/invalid-email": "Email không hợp lệ.",
+        "auth/weak-password": "Mật khẩu quá yếu. Hãy dùng ít nhất 6 ký tự.",
+        "auth/network-request-failed": "Lỗi mạng. Hãy kiểm tra Internet.",
+        "permission-denied": "Firebase Rules đang chặn quyền truy cập.",
+        "failed-precondition": "Firebase chưa được cấu hình đúng."
+      };
+      return map[code] || error?.message || "Có lỗi xảy ra.";
+    }
+
+    async function loadCurrentUser(firebaseUser) {
+      const snap = await getDoc(doc(db, "users", firebaseUser.uid));
+      if (snap.exists()) {
+        currentUser = { uid: firebaseUser.uid, ...snap.data() };
+      } else {
+        await setDoc(doc(db, "users", firebaseUser.uid), {
+          uid: firebaseUser.uid,
+          name: firebaseUser.displayName || firebaseUser.email.split("@")[0],
+          email: firebaseUser.email,
+          role: "user",
+          createdAt: serverTimestamp()
+        });
+        currentUser = {
+          uid: firebaseUser.uid,
+          name: firebaseUser.displayName || firebaseUser.email.split("@")[0],
+          email: firebaseUser.email,
+          role: "user"
+        };
+      }
+    }
+
+    function setupUIForUser() {
+      const authContainer = document.getElementById('auth-container');
+      const dashboard = document.getElementById('dashboard');
+      const userView = document.getElementById('user-view');
+      const adminView = document.getElementById('admin-view');
+      const userInfo = document.getElementById('user-info');
+      const logoutBtn = document.getElementById('logout-btn');
+
+      if (currentUser) {
+        authContainer.classList.add('hidden');
+        dashboard.classList.remove('hidden');
+        logoutBtn.classList.remove('hidden');
+        userInfo.textContent = `Xin chào, ${currentUser.name} (${currentUser.role.toUpperCase()})`;
+
+        if (currentUser.role === 'admin') {
+          adminView.classList.remove('hidden');
+          userView.classList.add('hidden');
+          renderAdminQuizManager();
+          renderAdminResultsList();
+        } else {
+          userView.classList.remove('hidden');
+          adminView.classList.add('hidden');
+          backToQuizList();
+        }
+      } else {
+        authContainer.classList.remove('hidden');
+        dashboard.classList.add('hidden');
+        userView.classList.add('hidden');
+        adminView.classList.add('hidden');
+        userInfo.textContent = '';
+        logoutBtn.classList.add('hidden');
+      }
+    }
+
+    // 4. USER: DANH SÁCH ĐỀ THI REALTIME
+    function backToQuizList() {
+      clearInterval(timerInterval);
+      document.getElementById('quiz-list-screen').classList.remove('hidden');
+      document.getElementById('quiz-config-screen').classList.add('hidden');
+      document.getElementById('quiz-taking-screen').classList.add('hidden');
+      document.getElementById('quiz-result-screen').classList.add('hidden');
+      renderQuizList();
+      renderHistory();
+    }
+
+    function renderQuizList() {
+      const container = document.getElementById('available-quizzes-list');
+
+      if (quizUnsubscribe) quizUnsubscribe();
+
+      const q = query(collection(db, "quizzes"), where("status", "==", "published"));
+
+      quizUnsubscribe = onSnapshot(q, (snapshot) => {
+        const publishedQuizzes = snapshot.docs.map(d => ({
+          id: d.id,
+          ...d.data()
+        })).sort((a, b) => {
+          const ta = a.createdAt?.toMillis?.() || 0;
+          const tb = b.createdAt?.toMillis?.() || 0;
+          return tb - ta;
+        });
+
+        let html = `
+          <div class="bg-red-50 border border-red-200 p-4 rounded-xl flex flex-col justify-between">
+            <div>
+              <span class="text-xs font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded">Mặc định</span>
+              <h3 class="font-bold text-lg text-slate-800 mt-1">Bảng chữ cái Hiragana (平仮名)</h3>
+              <p class="text-sm text-gray-600"> 46 câu hỏi chữ cái cơ bản.</p>
+            </div>
+            <button onclick="openConfigModal('hiragana')" class="mt-4 w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded-lg transition">
+              Vào Làm Bài
+            </button>
+          </div>
+
+          <div class="bg-blue-50 border border-blue-200 p-4 rounded-xl flex flex-col justify-between">
+            <div>
+              <span class="text-xs font-bold text-blue-600 bg-blue-100 px-2 py-0.5 rounded">Mặc định</span>
+              <h3 class="font-bold text-lg text-slate-800 mt-1">Bảng chữ cái Katakana (片仮名)</h3>
+              <p class="text-sm text-gray-600"> 46 câu hỏi chữ cái cơ bản.</p>
+            </div>
+            <button onclick="openConfigModal('katakana')" class="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg transition">
+              Vào Làm Bài
+            </button>
+          </div>
+        `;
+
+        publishedQuizzes.forEach((quiz) => {
+          html += `
+            <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl flex flex-col justify-between">
+              <div>
+                <span class="text-xs font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded">Tự Tạo</span>
+                <h3 class="font-bold text-lg text-slate-800 mt-1">${escapeHtml(quiz.title)}</h3>
+                <p class="text-sm text-gray-600">Số câu: ${quiz.questions.length} | Thời gian: ${quiz.timeLimit > 0 ? quiz.timeLimit + ' phút' : 'Không giới hạn'}</p>
+              </div>
+              <button onclick="startCustomQuiz('${quiz.id}')" class="mt-4 w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-lg transition">
+                Vào Làm Bài
+              </button>
+            </div>
+          `;
+        });
+
+        container.innerHTML = html;
+      }, (error) => {
+        console.error(error);
+        container.innerHTML = `<p class="text-red-600">Không thể tải đề thi: ${escapeHtml(error.message)}</p>`;
+      });
+    }
+
+    function openConfigModal(type) {
+      selectedQuiz = type;
+      const maxCount = 46;
+      document.getElementById('config-quiz-title').textContent = type === 'hiragana' ? 'Cấu Hình Đề Hiragana' : 'Cấu Hình Đề Katakana';
+      document.getElementById('cfg-max-q').textContent = `(Tối đa: ${maxCount} câu)`;
+      document.getElementById('cfg-count').value = 10;
+      document.getElementById('cfg-count').setAttribute('max', maxCount);
+      document.getElementById('quiz-list-screen').classList.add('hidden');
+      document.getElementById('quiz-config-screen').classList.remove('hidden');
+    }
+
+    function toggleTimeInput(show) {
+      const input = document.getElementById('cfg-time-minutes');
+      if (show) input.classList.remove('hidden');
+      else input.classList.add('hidden');
+    }
+
+    function confirmStartQuiz(e) {
+      e.preventDefault();
+      const count = parseInt(document.getElementById('cfg-count').value);
+      const maxCount = 46;
+      if (count > maxCount) {
+        alert("Số câu hỏi vượt quá giới hạn");
+        return;
+      }
+      const type = document.getElementById('cfg-type').value;
+      const isCustomTime = document.querySelector('input[name="time-opt"]:checked').value === 'custom';
+      const timeMinutes = isCustomTime ? parseInt(document.getElementById('cfg-time-minutes').value) : 0;
+      generateDefaultQuestions(selectedQuiz, count, type);
+      initTakingScreen(selectedQuiz === 'hiragana' ? 'Đề Thi Hiragana' : 'Đề Thi Katakana', timeMinutes);
+    }
+
+    // 5. ĐỀ MẶC ĐỊNH
+    function generateDefaultQuestions(quizType, count, mode) {
+      const dataSet = quizType === 'hiragana' ? hiraganaData : katakanaData;
+      const shuffled = [...dataSet].sort(() => 0.5 - Math.random());
+      const selectedItems = shuffled.slice(0, count);
+
+      activeQuestions = selectedItems.map((item, index) => {
+        let isJpQuestion = true;
+        if (mode === 'jp-lat') isJpQuestion = true;
+        else if (mode === 'lat-jp') isJpQuestion = false;
+        else isJpQuestion = Math.random() < 0.5;
+
+        const questionText = isJpQuestion ? item.jp : item.lat;
+        const correctAnswer = isJpQuestion ? item.lat : item.jp;
+        const wrongPool = dataSet.filter(d => (isJpQuestion ? d.lat : d.jp) !== correctAnswer);
+        const wrongShuffled = [...wrongPool].sort(() => 0.5 - Math.random()).slice(0, 3);
+        const wrongAnswers = wrongShuffled.map(d => isJpQuestion ? d.lat : d.jp);
+        const options = [...wrongAnswers, correctAnswer].sort(() => 0.5 - Math.random());
+
+        return {
+          id: index + 1,
+          title: `Ký tự "${questionText}" đọc/viết là gì?`,
+          options,
+          correct: options.indexOf(correctAnswer),
+          explanation: ""
+        };
+      });
+    }
+
+    async function startCustomQuiz(quizId) {
+      try {
+        const snap = await getDoc(doc(db, "quizzes", quizId));
+        if (!snap.exists()) {
+          alert("Đề thi KHÔNG còn tồn tại.");
+          return;
+        }
+
+        const quiz = { id: snap.id, ...snap.data() };
+        if (quiz.status !== "published") {
+          alert("Đề thi này CHƯA được gửi.");
+          return;
+        }
+
+        selectedCustomQuiz = quiz;
+        activeQuestions = quiz.questions || [];
+        initTakingScreen(quiz.title, quiz.timeLimit || 0);
+      } catch (error) {
+        console.error(error);
+        alert(getFirebaseError(error));
+      }
+    }
+
+    // 6. LÀM BÀI
+    function initTakingScreen(title, timeLimitMinutes) {
+      userAnswers = {};
+      document.getElementById('taking-quiz-title').textContent = title;
+      document.getElementById('question-tracker').textContent = `Tổng số: ${activeQuestions.length} câu`;
+
+      const container = document.getElementById('quiz-questions-container');
+      container.innerHTML = '';
+
+      activeQuestions.forEach((q, index) => {
+        const qDiv = document.createElement('div');
+        qDiv.className = "p-4 border rounded-lg bg-gray-50 space-y-3";
+        qDiv.innerHTML = `
+          <p class="font-bold text-slate-800">Câu ${index + 1}: ${escapeHtml(q.title)}</p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+            ${q.options.map((opt, i) => `
+              <label class="flex items-center gap-2 p-3 rounded-lg bg-white border cursor-pointer hover:bg-slate-100 transition">
+                <input type="radio" name="question-${q.id}" value="${i}" onchange="selectAnswer(${q.id}, ${i})">
+                <span class="text-sm font-medium">${escapeHtml(opt)}</span>
+              </label>
+            `).join('')}
+          </div>
+        `;
+        container.appendChild(qDiv);
+      });
+
+      clearInterval(timerInterval);
+      const timerDisplay = document.getElementById('timer-display');
+
+      if (timeLimitMinutes && timeLimitMinutes > 0) {
+        timeLeft = timeLimitMinutes * 60;
+        updateTimerDisplay();
+        timerInterval = setInterval(() => {
+          timeLeft--;
+          updateTimerDisplay();
+          if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            alert("Đã hết thời gian làm bài!");
+            submitQuiz();
+          }
+        }, 1000);
+      } else {
+        timerDisplay.textContent = "Thời gian: Không giới hạn";
+      }
+
+      document.getElementById('quiz-list-screen').classList.add('hidden');
+      document.getElementById('quiz-config-screen').classList.add('hidden');
+      document.getElementById('quiz-taking-screen').classList.remove('hidden');
+    }
+
+    function updateTimerDisplay() {
+      const mins = Math.floor(timeLeft / 60);
+      const secs = timeLeft % 60;
+      document.getElementById('timer-display').textContent =
+        `⏱️ Thời gian còn lại: ${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+
+    function selectAnswer(qId, optionIdx) {
+      userAnswers[qId] = optionIdx;
+    }
+
+    function cancelQuiz() {
+      if (confirm("Bạn có chắc muốn hủy bỏ bài thi?")) backToQuizList();
+    }
+
+    async function submitQuiz() {
+      clearInterval(timerInterval);
+      let score = 0;
+      const detailsContainer = document.getElementById('result-details-container');
+      detailsContainer.innerHTML = '';
+
+      activeQuestions.forEach((q, index) => {
+        const userChoice = userAnswers[q.id];
+        const isCorrect = userChoice === q.correct;
+        if (isCorrect) score++;
+
+        const card = document.createElement('div');
+        card.className = `p-4 border rounded-xl space-y-2 ${isCorrect ? 'bg-emerald-50 border-emerald-200' : 'bg-red-50 border-red-200'}`;
+
+        let optionsHtml = q.options.map((opt, idx) => {
+          let badge = '';
+          let textStyle = 'text-gray-700';
+          if (idx === q.correct) {
+            badge = '<span class="ml-auto font-bold text-xs bg-emerald-200 text-emerald-800 px-2 py-0.5 rounded">Đáp án đúng</span>';
+            textStyle = 'font-bold text-emerald-800';
+          }
+          if (idx === userChoice && !isCorrect) {
+            badge = '<span class="ml-auto font-bold text-xs bg-red-200 text-red-800 px-2 py-0.5 rounded">Bạn chọn sai</span>';
+            textStyle = 'font-bold text-red-700 line-through';
+          }
+          return `<div class="flex items-center p-2 rounded border bg-white text-sm ${textStyle}">
+                    <span>${String.fromCharCode(65 + idx)}. ${escapeHtml(opt)}</span>${badge}
+                  </div>`;
+        }).join('');
+
+        card.innerHTML = `
+          <div class="flex justify-between items-center">
+            <span class="font-bold text-sm ${isCorrect ? 'text-emerald-700' : 'text-red-700'}">
+              Câu ${index + 1}: ${escapeHtml(q.title)} (${isCorrect ? '✅ Đúng' : '❌ Sai'})
+            </span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2 pt-1">${optionsHtml}</div>
+          ${q.explanation ? `<div class="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-900">
+            <strong>💡 Giải thích:</strong> ${escapeHtml(q.explanation)}
+          </div>` : ''}
+          ${!isCorrect && !q.explanation ? `<div class="text-xs text-red-600 font-semibold pt-1">
+            💡 Gợi ý sửa lỗi: Bạn đã chọn "${userChoice !== undefined ? escapeHtml(q.options[userChoice]) : 'Chưa chọn'}", đáp án đúng là "${escapeHtml(q.options[q.correct])}".
+          </div>` : ''}
+        `;
+        detailsContainer.appendChild(card);
+      });
+
+      const title = document.getElementById('taking-quiz-title').textContent;
+      const result = {
+        userId: currentUser.uid,
+        userName: currentUser.name,
+        userEmail: currentUser.email,
+        quizId: selectedCustomQuiz?.id || selectedQuiz || "default",
+        quizTitle: title,
+        score,
+        total: activeQuestions.length,
+        answers: userAnswers,
+        submittedAt: serverTimestamp()
+      };
+
+      try {
+        await addDoc(collection(db, "results"), result);
+      } catch (error) {
+        console.error(error);
+        alert("Bài đã chấm điểm nhưng không lưu được kết quả lên Firebase: " + error.message);
+      }
+
+      document.getElementById('final-score').textContent = `${score} / ${activeQuestions.length}`;
+      document.getElementById('result-message').textContent =
+        `Bạn đã trả lời đúng ${(score / activeQuestions.length * 100).toFixed(0)}% số câu hỏi!`;
+
+      document.getElementById('quiz-taking-screen').classList.add('hidden');
+      document.getElementById('quiz-result-screen').classList.remove('hidden');
+    }
+
+    function renderHistory() {
+      const historyList = document.getElementById('history-list');
+      if (!currentUser) return;
+
+      const q = query(collection(db, "results"), where("userId", "==", currentUser.uid));
+
+      onSnapshot(q, (snapshot) => {
+        const history = snapshot.docs.map(d => ({ id: d.id, ...d.data() }))
+          .sort((a, b) => {
+            const ta = a.submittedAt?.toMillis?.() || 0;
+            const tb = b.submittedAt?.toMillis?.() || 0;
+            return tb - ta;
+          });
+
+        if (history.length === 0) {
+          historyList.innerHTML = `<p class="text-gray-500 italic">Chưa có lịch sử làm bài nào.</p>`;
+          return;
+        }
+
+        historyList.innerHTML = history.slice(0, 5).map(h => `
+          <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg border">
+            <div>
+              <span class="font-bold text-slate-700 block text-xs">${escapeHtml(h.quizTitle || '')}</span>
+              <span class="text-xs text-gray-500">${formatTimestamp(h.submittedAt)}</span>
+            </div>
+            <span class="font-bold text-blue-600 text-sm">Điểm: ${h.score}/${h.total}</span>
+          </div>
+        `).join('');
+      }, error => console.error(error));
+    }
+
+    // 7. ADMIN
+    function renderAdminQuizManager() {
+      const container = document.getElementById('admin-custom-quizzes-list');
+
+      if (adminQuizUnsubscribe) adminQuizUnsubscribe();
+
+      adminQuizUnsubscribe = onSnapshot(
+        collection(db, "quizzes"),
+        (snapshot) => {
+          const customQuizzes = snapshot.docs.map(d => ({ id: d.id, ...d.data() }))
+            .sort((a, b) => {
+              const ta = a.createdAt?.toMillis?.() || 0;
+              const tb = b.createdAt?.toMillis?.() || 0;
+              return tb - ta;
+            });
+
+          let html = `
+            <div class="flex justify-between items-center p-3 bg-red-50 border border-red-200 rounded-lg">
+              <div>
+                <span class="text-xs font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded">Mặc định</span>
+                <p class="font-bold text-sm text-slate-800">Bảng chữ cái Hiragana (平仮名)</p>
+                <p class="text-xs text-gray-500">Số câu: 46 câu | Trạng thái: Có sẵn</p>
+              </div>
+              <button onclick="previewDefaultQuiz('hiragana')" class="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-3 py-1.5 rounded transition">
+                 Xem Chi Tiết / Đáp Án
+              </button>
+            </div>
+
+            <div class="flex justify-between items-center p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <div>
+                <span class="text-xs font-bold text-blue-600 bg-blue-100 px-2 py-0.5 rounded">Mặc định</span>
+                <p class="font-bold text-sm text-slate-800">Bảng chữ cái Katakana (片仮名)</p>
+                <p class="text-xs text-gray-500">Số câu: 46 câu | Trạng thái: Có sẵn</p>
+              </div>
+              <button onclick="previewDefaultQuiz('katakana')" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-1.5 rounded transition">
+                 Xem Chi Tiết / Đáp Án
+              </button>
+            </div>
+          `;
+
+          customQuizzes.forEach((quiz) => {
+            const isPublished = quiz.status === 'published';
+            html += `
+              <div class="flex justify-between items-center p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded">Tự Tạo</span>
+                    <span class="text-xs font-bold px-2 py-0.5 rounded ${isPublished ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}">
+                      ${isPublished ? ' Đã gửi học viên' : ' Chỉ lưu (Ẩn)'}
+                    </span>
+                  </div>
+                  <p class="font-bold text-sm text-slate-800 mt-1">${escapeHtml(quiz.title)}</p>
+                  <p class="text-xs text-gray-500">Số câu: ${quiz.questions.length} | Giới hạn: ${quiz.maxLimit} | Thời gian: ${quiz.timeLimit > 0 ? quiz.timeLimit + ' phút' : 'Không giới hạn'}</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button onclick="toggleQuizStatus('${quiz.id}')" class="text-xs font-semibold px-2.5 py-1.5 rounded border transition ${isPublished ? 'bg-amber-100 hover:bg-amber-200 text-amber-800 border-amber-300' : 'bg-green-100 hover:bg-green-200 text-green-800 border-green-300'}">
+                    ${isPublished ? 'Ẩn đề này' : 'Gửi'}
+                  </button>
+                  <button onclick="editCustomQuiz('${quiz.id}')" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-1.5 rounded transition">
+                    Sửa
+                  </button>
+                  <button onclick="previewCustomQuiz('${quiz.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-1.5 rounded transition">
+                    Xem
+                  </button>
+                  <button onclick="deleteCustomQuiz('${quiz.id}')" class="text-red-500 hover:text-red-700 text-xs font-semibold px-2 py-1 bg-red-50 rounded border border-red-200">
+                    Xóa
+                  </button>
+                </div>
+              </div>
+            `;
+          });
+
+          container.innerHTML = html;
+          const inputsContainer = document.getElementById('admin-questions-inputs');
+          if (inputsContainer.children.length === 0 && !editingQuizId) {
+            questionCounter = 0;
+            addQuestionField();
+          }
+        },
+        error => {
+          console.error(error);
+          container.innerHTML = `<p class="text-red-600">Không thể tải danh sách đề: ${escapeHtml(error.message)}</p>`;
+        }
+      );
+    }
+
+    // Chức năng hiển thị điểm / kết quả học viên cho Admin
+    function renderAdminResultsList() {
+      const container = document.getElementById('admin-results-list');
+      if (adminResultsUnsubscribe) adminResultsUnsubscribe();
+
+      adminResultsUnsubscribe = onSnapshot(collection(db, "results"), (snapshot) => {
+        const results = snapshot.docs.map(d => ({ id: d.id, ...d.data() }))
+          .sort((a, b) => {
+            const ta = a.submittedAt?.toMillis?.() || 0;
+            const tb = b.submittedAt?.toMillis?.() || 0;
+            return tb - ta;
+          });
+
+        if (results.length === 0) {
+          container.innerHTML = `<p class="text-gray-500 italic">Chưa có kết quả bài làm nào từ học viên.</p>`;
+          return;
+        }
+
+        container.innerHTML = results.map(r => `
+          <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg border">
+            <div>
+              <span class="font-bold text-slate-800 text-sm">${escapeHtml(r.userName || 'Ẩn danh')} (${escapeHtml(r.userEmail || '')})</span>
+              <p class="text-xs text-gray-600">Đề: <span class="font-semibold text-slate-700">${escapeHtml(r.quizTitle || '')}</span> - Nộp lúc: ${formatTimestamp(r.submittedAt)}</p>
+            </div>
+            <div class="text-right">
+              <span class="font-bold text-blue-600 text-sm">Điểm: ${r.score}/${r.total}</span>
+              <span class="block text-xs text-gray-500">${((r.score / r.total) * 100).toFixed(0)}%</span>
+            </div>
+          </div>
+        `).join('');
+      }, error => {
+        console.error(error);
+        container.innerHTML = `<p class="text-red-600">Không thể tải danh sách kết quả: ${escapeHtml(error.message)}</p>`;
+      });
+    }
+
+    // Chức năng tải thông tin đề thi lên form để chỉnh sửa
+    async function editCustomQuiz(id) {
+      try {
+        const snap = await getDoc(doc(db, "quizzes", id));
+        if (!snap.exists()) {
+          alert("Đề thi không tồn tại.");
+          return;
+        }
+        const quiz = snap.data();
+        editingQuizId = id;
+
+        document.getElementById('admin-form-heading').textContent = "Chỉnh Sửa Đề Thi";
+        document.getElementById('admin-form-subheading').textContent = `Đang Sửa: ${quiz.title}`;
+        document.getElementById('admin-quiz-title').value = quiz.title || "";
+        document.getElementById('admin-quiz-limit').value = quiz.maxLimit || 10;
+        document.getElementById('admin-quiz-time').value = quiz.timeLimit || 0;
+        document.getElementById('admin-quiz-status').value = quiz.status || "draft";
+        document.getElementById('admin-submit-btn').textContent = "Cập Nhật Đề Thi";
+        document.getElementById('admin-cancel-edit-btn').classList.remove('hidden');
+
+        // Nạp các câu hỏi vào form
+        const inputsContainer = document.getElementById('admin-questions-inputs');
+        inputsContainer.innerHTML = '';
+        questionCounter = 0;
+
+        if (quiz.questions && Array.isArray(quiz.questions)) {
+          quiz.questions.forEach((q) => {
+            questionCounter++;
+            const qDiv = document.createElement('div');
+            qDiv.className = "bg-white p-3 border rounded-lg space-y-2 text-sm";
+            qDiv.id = `q-block-${questionCounter}`;
+            qDiv.innerHTML = `
+              <div class="flex justify-between items-center">
+                <span class="font-bold text-slate-700">Câu hỏi #${questionCounter}</span>
+                <button type="button" onclick="removeQuestionField(${questionCounter})" class="text-red-500 hover:underline text-xs">Xóa câu này</button>
+              </div>
+              <input type="text" class="q-title w-full border p-2 rounded outline-none" placeholder="Nội dung câu hỏi..." value="${escapeHtml(q.title)}" required>
+              <div class="grid grid-cols-2 gap-2">
+                <input type="text" class="opt-0 border p-2 rounded" placeholder="Đáp án A" value="${escapeHtml(q.options[0] || '')}" required>
+                <input type="text" class="opt-1 border p-2 rounded" placeholder="Đáp án B" value="${escapeHtml(q.options[1] || '')}" required>
+                <input type="text" class="opt-2 border p-2 rounded" placeholder="Đáp án C" value="${escapeHtml(q.options[2] || '')}" required>
+                <input type="text" class="opt-3 border p-2 rounded" placeholder="Đáp án D" value="${escapeHtml(q.options[3] || '')}" required>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold mb-1">Chọn đáp án đúng</label>
+                <select class="opt-correct w-full border p-1.5 rounded text-xs bg-gray-50">
+                  <option value="0" ${q.correct === 0 ? 'selected' : ''}>Đáp án A</option>
+                  <option value="1" ${q.correct === 1 ? 'selected' : ''}>Đáp án B</option>
+                  <option value="2" ${q.correct === 2 ? 'selected' : ''}>Đáp án C</option>
+                  <option value="3" ${q.correct === 3 ? 'selected' : ''}>Đáp án D</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold mb-1">Giải thích (tùy chỉnh, không bắt buộc)</label>
+                <textarea class="q-explanation w-full border p-2 rounded outline-none text-xs" placeholder="Nhập giải thích cho câu hỏi này...">${escapeHtml(q.explanation || '')}</textarea>
+              </div>
+            `;
+            inputsContainer.appendChild(qDiv);
+          });
+        }
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch (error) {
+        console.error(error);
+        alert(getFirebaseError(error));
+      }
+    }
+
+    function cancelEditQuiz() {
+      editingQuizId = null;
+      document.getElementById('admin-form-heading').textContent = "Tạo Đề Thi Mới";
+      document.getElementById('admin-form-subheading').textContent = "Đề Thi Mới";
+      document.getElementById('admin-submit-btn').textContent = "Lưu Đề Thi";
+      document.getElementById('admin-cancel-edit-btn').classList.add('hidden');
+      document.querySelector('#admin-view form').reset();
+      document.getElementById('admin-questions-inputs').innerHTML = '';
+      questionCounter = 0;
+      addQuestionField();
+    }
+
+    async function toggleQuizStatus(id) {
+      try {
+        const quizRef = doc(db, "quizzes", id);
+        const snap = await getDoc(quizRef);
+        if (!snap.exists()) return;
+        const quiz = snap.data();
+        const newStatus = quiz.status === 'published' ? 'draft' : 'published';
+        await updateDoc(quizRef, {
+          status: newStatus,
+          updatedAt: serverTimestamp()
+        });
+      } catch (error) {
+        console.error(error);
+        alert(getFirebaseError(error));
+      }
+    }
+
+    function previewDefaultQuiz(type) {
+      const modal = document.getElementById('admin-quiz-preview-modal');
+      const title = document.getElementById('preview-modal-title');
+      const content = document.getElementById('preview-modal-content');
+      const dataSet = type === 'hiragana' ? hiraganaData : katakanaData;
+
+      title.textContent = `Chi Tiết Đáp Án - Bảng Chữ Cái ${type === 'hiragana' ? 'Hiragana' : 'Katakana'}`;
+      content.innerHTML = dataSet.map((item, idx) => `
+        <div class="p-2.5 bg-white border rounded flex justify-between items-center">
+          <div><span class="font-bold text-slate-700">Câu ${idx + 1}: Ký tự "${item.jp}"</span></div>
+          <span class="font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded border border-emerald-200">Đáp án chuẩn: ${item.lat}</span>
+        </div>
+      `).join('');
+      modal.classList.remove('hidden');
+    }
+
+    async function previewCustomQuiz(quizId) {
+      try {
+        const snap = await getDoc(doc(db, "quizzes", quizId));
+        if (!snap.exists()) return;
+        const quiz = snap.data();
+        const modal = document.getElementById('admin-quiz-preview-modal');
+        const title = document.getElementById('preview-modal-title');
+        const content = document.getElementById('preview-modal-content');
+
+        title.textContent = `Chi Tiết Đáp Án - ${quiz.title}`;
+        content.innerHTML = quiz.questions.map((q, idx) => `
+          <div class="p-3 bg-white border rounded space-y-2">
+            <p class="font-bold text-slate-800">Câu ${idx + 1}: ${escapeHtml(q.title)}</p>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              ${q.options.map((opt, i) => `
+                <div class="p-2 rounded border ${i === q.correct ? 'bg-emerald-100 border-emerald-400 font-bold text-emerald-800' : 'bg-gray-50'}">
+                  ${String.fromCharCode(65 + i)}. ${escapeHtml(opt)} ${i === q.correct ? ' (Đúng)' : ''}
+                </div>
+              `).join('')}
+            </div>
+            ${q.explanation ? `<p class="text-xs text-blue-700 bg-blue-50 p-2 rounded"><strong>Giải thích:</strong> ${escapeHtml(q.explanation)}</p>` : ''}
+          </div>
+        `).join('');
+        modal.classList.remove('hidden');
+      } catch (error) {
+        console.error(error);
+        alert(getFirebaseError(error));
+      }
+    }
+
+    function closeAdminPreview() {
+      document.getElementById('admin-quiz-preview-modal').classList.add('hidden');
+    }
+
+    function addQuestionField() {
+      questionCounter++;
+      const container = document.getElementById('admin-questions-inputs');
+      const qDiv = document.createElement('div');
+      qDiv.className = "bg-white p-3 border rounded-lg space-y-2 text-sm";
+      qDiv.id = `q-block-${questionCounter}`;
+      qDiv.innerHTML = `
+        <div class="flex justify-between items-center">
+          <span class="font-bold text-slate-700">Câu hỏi #${questionCounter}</span>
+          <button type="button" onclick="removeQuestionField(${questionCounter})" class="text-red-500 hover:underline text-xs">Xóa câu này</button>
+        </div>
+        <input type="text" class="q-title w-full border p-2 rounded outline-none" placeholder="Nội dung câu hỏi..." required>
+        <div class="grid grid-cols-2 gap-2">
+          <input type="text" class="opt-0 border p-2 rounded" placeholder="Đáp án A" required>
+          <input type="text" class="opt-1 border p-2 rounded" placeholder="Đáp án B" required>
+          <input type="text" class="opt-2 border p-2 rounded" placeholder="Đáp án C" required>
+          <input type="text" class="opt-3 border p-2 rounded" placeholder="Đáp án D" required>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold mb-1">Chọn đáp án đúng</label>
+          <select class="opt-correct w-full border p-1.5 rounded text-xs bg-gray-50">
+            <option value="0">Đáp án A</option>
+            <option value="1">Đáp án B</option>
+            <option value="2">Đáp án C</option>
+            <option value="3">Đáp án D</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold mb-1">Giải thích (tùy chỉnh, không bắt buộc)</label>
+          <textarea class="q-explanation w-full border p-2 rounded outline-none text-xs" placeholder="Nhập giải thích cho câu hỏi này..."></textarea>
+        </div>
+      `;
+      container.appendChild(qDiv);
+    }
+
+    function removeQuestionField(id) {
+      const block = document.getElementById(`q-block-${id}`);
+      if (block) block.remove();
+    }
+
+    async function handleCreateQuiz(e) {
+      e.preventDefault();
+
+      if (!currentUser || currentUser.role !== "admin") {
+        alert("Bạn không có quyền tạo/sửa đề.");
+        return;
+      }
+
+      const title = document.getElementById('admin-quiz-title').value.trim();
+      const maxLimit = parseInt(document.getElementById('admin-quiz-limit').value);
+      const timeLimit = parseInt(document.getElementById('admin-quiz-time').value) || 0;
+      const status = document.getElementById('admin-quiz-status').value;
+      const qBlocks = document.querySelectorAll('#admin-questions-inputs > div');
+
+      if (qBlocks.length === 0) {
+        alert("Bạn phải tạo ít nhất 1 câu hỏi!");
+        return;
+      }
+
+      if (qBlocks.length > maxLimit) {
+        alert("Số câu hỏi vượt quá giới hạn");
+        return;
+      }
+
+      const questions = [];
+      qBlocks.forEach((block, idx) => {
+        const qTitle = block.querySelector('.q-title').value.trim();
+        const opts = [
+          block.querySelector('.opt-0').value.trim(),
+          block.querySelector('.opt-1').value.trim(),
+          block.querySelector('.opt-2').value.trim(),
+          block.querySelector('.opt-3').value.trim()
+        ];
+        const correct = parseInt(block.querySelector('.opt-correct').value);
+        const explanation = block.querySelector('.q-explanation').value.trim();
+
+        questions.push({
+          id: idx + 1,
+          title: qTitle,
+          options: opts,
+          correct,
+          explanation
+        });
+      });
+
+      try {
+        if (editingQuizId) {
+          // Cập nhật đề thi đã có
+          await updateDoc(doc(db, "quizzes", editingQuizId), {
+            title,
+            maxLimit,
+            timeLimit,
+            status,
+            questions,
+            updatedAt: serverTimestamp()
+          });
+          alert("Cập nhật đề thi thành công!");
+          cancelEditQuiz();
+        } else {
+          // Tạo đề thi mới
+          await addDoc(collection(db, "quizzes"), {
+            title,
+            maxLimit,
+            timeLimit,
+            status,
+            questions,
+            createdBy: currentUser.uid,
+            createdByName: currentUser.name,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+          });
+
+          alert(status === 'published'
+            ? "Lưu và gửi đề thi thành công!"
+            : "Đã lưu đề thi ở chế độ ẩn với học viên!");
+
+          e.target.reset();
+          document.getElementById('admin-questions-inputs').innerHTML = '';
+          questionCounter = 0;
+          addQuestionField();
+        }
+      } catch (error) {
+        console.error(error);
+        alert("Không thể lưu đề: " + getFirebaseError(error));
+      }
+    }
+
+    async function deleteCustomQuiz(id) {
+      if (!confirm("Bạn muốn xóa đề thi này khỏi hệ thống?")) return;
+
+      try {
+        await deleteDoc(doc(db, "quizzes", id));
+        if (editingQuizId === id) {
+          cancelEditQuiz();
+        }
+      } catch (error) {
+        console.error(error);
+        alert(getFirebaseError(error));
+      }
+    }
+
+    function formatTimestamp(ts) {
+      if (!ts) return "Đang cập nhật...";
+      try { return ts.toDate().toLocaleString('vi-VN'); }
+      catch { return "Đang cập nhật..."; }
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    // Cho onclick trong HTML gọi được các hàm trong module.
+    Object.assign(window, {
+      switchTab,
+      handleLogin,
+      handleRegister,
+      handleLogout,
+      openConfigModal,
+      toggleTimeInput,
+      confirmStartQuiz,
+      startCustomQuiz,
+      selectAnswer,
+      cancelQuiz,
+      submitQuiz,
+      backToQuizList,
+      toggleQuizStatus,
+      previewDefaultQuiz,
+      previewCustomQuiz,
+      closeAdminPreview,
+      addQuestionField,
+      removeQuestionField,
+      handleCreateQuiz,
+      deleteCustomQuiz,
+      editCustomQuiz,
+      cancelEditQuiz
+    });
+
+    // 8. FIREBASE AUTH STATE
+    onAuthStateChanged(auth, async (firebaseUser) => {
+      try {
+        if (firebaseUser) {
+          await loadCurrentUser(firebaseUser);
+          setupUIForUser();
+        } else {
+          currentUser = null;
+          if (quizUnsubscribe) quizUnsubscribe();
+          if (adminQuizUnsubscribe) adminQuizUnsubscribe();
+          if (adminResultsUnsubscribe) adminResultsUnsubscribe();
+          quizUnsubscribe = null;
+          adminQuizUnsubscribe = null;
+          adminResultsUnsubscribe = null;
+          setupUIForUser();
+        }
+      } catch (error) {
+        console.error(error);
+        alert("Không tải được tài khoản: " + getFirebaseError(error));
+      }
+    });
+  </script>
+</body>
+</html>
