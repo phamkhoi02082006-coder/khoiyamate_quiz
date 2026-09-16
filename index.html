@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Trắc Nghiệm Tiếng Nhật</title>
+  <title>TEST Học Tiếng Nhật</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-100 font-sans min-h-screen pb-10">
@@ -11,24 +11,35 @@
 <!-- NAVBAR -->
   <nav class="bg-slate-800 text-white p-4 shadow-md flex justify-between items-center px-6 relative">
     <div class="flex flex-col">
-      <h1 class="text-xl font-bold">KHOIYAMATE</h1>
+      <h1 class="text-4xl font-black tracking-wider bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 bg-clip-text text-transparent animate-gradient">KHOIYAMATE</h1>
       <span id="user-info" class="text-xs text-slate-300 mt-0.5"></span>
     </div>
-    
+    <!-- KHU VỰC ĐỒNG HỒ & MENU 3 GẠCH -->
+    <div class="flex items-center gap-3">
+      
+      <!-- DÁN ĐOẠN ĐỒNG HỒ NÀY VÀO ĐÂY -->
+      <div id="live-clock" class="hidden sm:block text-xs font-medium text-slate-300 bg-slate-700/60 px-3 py-1.5 rounded-lg border border-slate-600 shadow-inner"></div>
     <!-- MENU 3 GẠCH & DROPDOWN -->
-    <div class="relative">
-      <button onclick="toggleDropdown()" class="p-2 rounded-lg bg-slate-700 hover:bg-slate-600 transition text-white focus:outline-none flex items-center justify-center">
+<div class="relative">
+      <button onclick="toggleDropdown()" class="p-2.5 rounded-xl bg-slate-700 hover:bg-slate-600 transition-all duration-300 hover:scale-105 hover:shadow-md text-white focus:outline-none flex items-center justify-center group">
         <!-- Icon 3 gạch -->
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        <svg class="w-6 h-6 transition-transform duration-300 group-hover:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"></path>
         </svg>
       </button>
 
       <!-- Hộp menu thả xuống -->
       <div id="dropdown-menu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg py-2 z-50 text-slate-800 border">
-        <!-- Nút Đổi Mật Khẩu được thêm vào đây -->
+        <!-- Thêm nút Hỗ Trợ ở đây -->
+        <button onclick="openSupportModal(); toggleDropdown();" class="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-100 flex items-center gap-2">
+          💡 Hỗ Trợ
+        </button>
         <button onclick="openChangePasswordModal(); toggleDropdown();" class="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-100 flex items-center gap-2">
           🔑 Đổi Mật Khẩu
+        </button>
+        <!-- Nút Đổi Tài Khoản mới thêm -->
+        <button id="switch-account-btn" onclick="handleSwitchAccount(); toggleDropdown();" class="hidden w-full text-left px-4 py-2.5 text-sm font-semibold text-blue-600 hover:bg-blue-50 flex items-center gap-2">
+          🔄 Đổi Tài Khoản
         </button>
         <button onclick="resetData(); toggleDropdown();" class="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-100 flex items-center gap-2">
           🗑️ Xóa Dữ Liệu
@@ -39,6 +50,87 @@
       </div>
     </div>
   </nav>
+
+<!-- MODAL HỖ TRỢ HIỆN Ở GIỮA MÀN HÌNH -->
+ 
+  <div id="support-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-2xl shadow-2xl p-6 w-[420px] text-center space-y-4 transform transition-all scale-100 max-h-[90vh] overflow-y-auto">
+      <div class="text-3xl">💡</div>
+      <h3 class="text-xl font-bold text-slate-800">Liên Hệ Hỗ Trợ</h3>
+      
+      <!-- KHU VỰC THÔNG TIN LIÊN HỆ -->
+      <div class="bg-slate-50 p-3.5 rounded-xl border text-left space-y-2 text-sm text-slate-600">
+        <p class="flex items-center gap-2">
+          <span>📞</span> <strong>Hotline/Zalo:</strong> 0982.375.006
+        </p>
+        <p class="flex items-center gap-2">
+          <span>✉️</span> <strong>Email:</strong> phamkhoi02082006@gmail.com
+        </p>
+        <p class="flex items-center gap-2">
+          <span>✈️</span> <strong>Telegram:</strong> @PhNguyen Khoi
+        </p>
+      </div>
+
+    <!-- KHU VỰC SỐ TÀI KHOẢN & MÃ QR VIETCOMBANK (DẠNG DỌC) -->
+      <div class="bg-emerald-50/60 p-4 rounded-xl border border-emerald-200 text-center space-y-3">
+        <div class="text-xs font-bold text-emerald-800 uppercase tracking-wide"> Ủng Hộ Phát Triển Ứng Dụng</div>
+        
+        <!-- Ảnh Mã QR to rõ ở giữa -->
+        <div class="flex justify-center">
+          <div class="bg-white p-2.5 rounded-xl border shadow-sm inline-block">
+            <img src="https://api.vietqr.io/image/970436-9982375006-compact2.jpg?accountName=PHAM%20NGUYEN%20KHOI" alt="Mã QR Vietcombank" class="w-50 h-50 object-contain rounded">
+          </div>
+        </div>
+        
+        <!-- Thông tin STK nằm bên dưới -->
+        <div class="text-xs text-slate-700 space-y-1 pt-1 border-t border-emerald-100 text-left px-2">
+          <p>🏦 <strong>Ngân hàng:</strong> Vietcombank</p>
+          <p>🔢 <strong>STK:</strong> <span class="font-bold text-slate-900 select-all bg-emerald-100 px-1.5 py-0.5 rounded">9982375006</span></p>
+          <p>👤 <strong>Chủ TK:</strong> PHAM NGUYEN KHOI</p>
+          <p class="text-[11px] text-slate-500 italic mt-1 text-center">Nội dung: I love U</p>
+        </div>
+      </div>
+
+      <!-- LƯU Ý -->
+      <div class="text-xs text-slate-500 text-left px-1">
+        <p>⚠️ <strong>Lưu ý:</strong>Hãy liên hệ với mình khi bạn gặp bất kỳ lỗi gì, có ý tưởng nâng cấp hệ thống hay chỉ đơn giản là nói lời yêu thương.</p>
+      </div>
+
+      <button onclick="closeSupportModal()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-2.5 rounded-xl transition shadow">
+        Đóng
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL ĐỔI MẬT KHẨU -->
+  <div id="change-password-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-2xl shadow-2xl p-6 w-[400px] text-center space-y-4 transform transition-all scale-100">
+      <div class="text-3xl">🔑</div>
+      <h3 class="text-xl font-bold text-slate-800">Đổi Mật Khẩu</h3>
+      <form onsubmit="handleChangePassword(event)" class="space-y-3 text-left">
+        <div>
+          <label class="block text-xs font-semibold mb-1">Mật khẩu hiện tại</label>
+          <input type="password" id="current-password" required class="w-full border p-2.5 rounded-lg text-sm focus:ring-2 focus:ring-red-500 outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold mb-1">Mật khẩu mới</label>
+          <input type="password" id="new-password" required class="w-full border p-2.5 rounded-lg text-sm focus:ring-2 focus:ring-red-500 outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold mb-1">Xác nhận mật khẩu mới</label>
+          <input type="password" id="confirm-new-password" required class="w-full border p-2.5 rounded-lg text-sm focus:ring-2 focus:ring-red-500 outline-none">
+        </div>
+        <div class="flex gap-2 pt-2">
+          <button type="submit" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-xl transition text-sm shadow">
+            Xác Nhận
+          </button>
+          <button type="button" onclick="closeChangePasswordModal()" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold px-4 py-2.5 rounded-xl transition text-sm">
+            Hủy
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <!-- FORM DANG NHAP / DANG KY -->
   <div class="max-w-md mx-auto my-10 p-6 bg-white rounded-xl shadow-md" id="auth-container">
@@ -84,38 +176,6 @@
         Tạo tài khoản
       </button>
     </form>
-  </div>
-
-  <!-- MODAL ĐỔI MẬT KHẨU -->
-  <div id="change-password-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-xl shadow-lg max-w-md w-full p-6 space-y-4">
-      <div class="flex justify-between items-center border-b pb-2">
-        <h3 class="font-bold text-lg text-slate-800">🔑 Đổi Mật Khẩu Mới</h3>
-        <button onclick="closeChangePasswordModal()" class="text-gray-500 hover:text-black font-bold">✕</button>
-      </div>
-      <form onsubmit="handleChangePassword(event)" class="space-y-4">
-        <div>
-          <label class="block text-sm font-medium mb-1">Mật khẩu hiện tại</label>
-          <input type="password" id="current-password" required class="w-full border p-2.5 rounded-lg focus:ring-2 focus:ring-red-500 outline-none" placeholder="Nhập mật khẩu cũ...">
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">Mật khẩu mới</label>
-          <input type="password" id="new-password" required class="w-full border p-2.5 rounded-lg focus:ring-2 focus:ring-red-500 outline-none" placeholder="Ít nhất 6 ký tự...">
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">Xác nhận mật khẩu mới</label>
-          <input type="password" id="confirm-password" required class="w-full border p-2.5 rounded-lg focus:ring-2 focus:ring-red-500 outline-none" placeholder="Nhập lại mật khẩu mới...">
-        </div>
-        <div class="flex gap-3 pt-2">
-          <button type="submit" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-lg transition">
-            Xác Nhận Đổi
-          </button>
-          <button type="button" onclick="closeChangePasswordModal()" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold px-4 py-2.5 rounded-lg transition">
-            Hủy
-          </button>
-        </div>
-      </form>
-    </div>
   </div>
 
   <!-- DASHBOARD CHÍNH -->
@@ -259,19 +319,20 @@
           </select>
         </div>
 
-        <!-- Danh sách câu hỏi tự soạn trong đề -->
+       <!-- Danh sách câu hỏi tự soạn trong đề -->
         <div class="space-y-3 pt-2">
-          <div class="flex justify-between items-center">
+          <div>
             <h4 class="font-bold text-sm text-slate-700">Danh Sách Câu Hỏi & Đáp Án</h4>
-            <button type="button" onclick="addQuestionField()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs px-3 py-1.5 rounded transition">
-              + Thêm Câu Hỏi
-            </button>
           </div>
           
           <div id="admin-questions-inputs" class="space-y-4"></div>
+
+          <button type="button" onclick="addQuestionField()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm py-2.5 rounded-lg shadow-sm transition flex items-center justify-center gap-2">
+            ➕ Thêm Câu Hỏi Mới
+          </button>
         </div>
 
-        <div class="flex gap-3">
+        <div class="flex gap-3 pt-2">
           <button type="submit" id="admin-submit-btn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow transition">
             Lưu Đề Thi 
           </button>
@@ -285,13 +346,18 @@
       <h3 class="font-bold text-lg border-b pb-2">📋 Các Đề Thi Đã Lưu</h3>
       <div id="admin-custom-quizzes-list" class="space-y-3"></div>
 
-      <!-- Modal/Khu vực xem chi tiết đáp án của Admin -->
-      <div id="admin-quiz-preview-modal" class="hidden border rounded-xl p-5 bg-slate-50 space-y-4">
-        <div class="flex justify-between items-center border-b pb-2">
-          <h3 class="font-bold text-lg text-slate-800" id="preview-modal-title">Xem Chi Tiết Đề Thi</h3>
-          <button onclick="closeAdminPreview()" class="text-gray-500 hover:text-black font-bold">✕ Đóng</button>
+      <!-- ĐÃ CHUYỂN PHẦN XEM CHI TIẾT THÀNH MODAL NỔI TRỰC TIẾP -->
+      <div id="admin-quiz-preview-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-2xl text-left space-y-4 transform transition-all scale-100 max-h-[90vh] flex flex-col">
+          <div class="flex justify-between items-center border-b pb-3">
+            <h3 class="font-bold text-xl text-slate-800" id="preview-modal-title">Xem Chi Tiết Đề Thi</h3>
+            <button onclick="closeAdminPreview()" class="bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold w-8 h-8 rounded-full flex items-center justify-center transition">✕</button>
+          </div>
+          <div id="preview-modal-content" class="space-y-3 overflow-y-auto pr-2 text-sm flex-1"></div>
+          <div class="pt-2 border-t text-right">
+            <button onclick="closeAdminPreview()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold px-5 py-2 rounded-xl text-sm transition">Đóng</button>
+          </div>
         </div>
-        <div id="preview-modal-content" class="space-y-3 max-h-96 overflow-y-auto pr-2 text-sm"></div>
       </div>
 
       <!-- Khu vực xem điểm / kết quả bài làm của học viên dành cho Admin -->
@@ -308,16 +374,29 @@
       menu.classList.toggle('hidden');
     }
 
-    // Các hàm mở/đóng Modal Đổi Mật Khẩu
+    // Các hàm xử lý bật/tắt bảng hỗ trợ
+    function openSupportModal() {
+      const modal = document.getElementById('support-modal');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeSupportModal() {
+      const modal = document.getElementById('support-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
     function openChangePasswordModal() {
-      document.getElementById('change-password-modal').classList.remove('hidden');
+      const modal = document.getElementById('change-password-modal');
+      if (modal) modal.classList.remove('hidden');
     }
 
     function closeChangePasswordModal() {
-      document.getElementById('change-password-modal').classList.add('hidden');
-      // Reset form đổi mật khẩu nếu có
-      const form = document.querySelector('#change-password-modal form');
-      if (form) form.reset();
+      const modal = document.getElementById('change-password-modal');
+      if (modal) {
+        modal.classList.add('hidden');
+        const form = modal.querySelector('form');
+        if (form) form.reset();
+      }
     }
 
     // Đóng menu khi người dùng bấm ra ngoài màn hình
@@ -330,7 +409,6 @@
     });
     // ============================================================
     // FIREBASE CONFIG - DÁN CONFIG CỦA BẠN VÀO ĐÂY
-    // Firebase Console -> Project settings -> Your apps -> Web app
     // ============================================================
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
     import {
@@ -412,7 +490,7 @@
     let quizUnsubscribe = null;
     let adminQuizUnsubscribe = null;
     let adminResultsUnsubscribe = null;
-    let editingQuizId = null; // Biến lưu ID đề thi đang được chỉnh sửa
+    let editingQuizId = null;
 
     // 3. UI / AUTH
     function switchTab(tab) {
@@ -476,35 +554,31 @@
       }
     }
 
-    // Xử lý đổi mật khẩu
     async function handleChangePassword(e) {
       e.preventDefault();
       const currentPassword = document.getElementById('current-password').value;
       const newPassword = document.getElementById('new-password').value;
-      const confirmPassword = document.getElementById('confirm-password').value;
+      const confirmNewPassword = document.getElementById('confirm-new-password').value;
 
       if (newPassword.length < 6) {
         alert("Mật khẩu mới phải có ít nhất 6 ký tự.");
         return;
       }
 
-      if (newPassword !== confirmPassword) {
-        alert("Xác nhận mật khẩu mới không khớp.");
+      if (newPassword !== confirmNewPassword) {
+        alert("Mật khẩu mới và xác nhận mật khẩu không khớp.");
         return;
       }
 
       const user = auth.currentUser;
       if (!user || !user.email) {
-        alert("Bạn chưa đăng nhập.");
+        alert("Vui lòng đăng nhập lại để thực hiện đổi mật khẩu.");
         return;
       }
 
       try {
-        // Xác thực lại tài khoản trước khi đổi mật khẩu (yêu cầu bảo mật của Firebase)
         const credential = EmailAuthProvider.credential(user.email, currentPassword);
         await reauthenticateWithCredential(user, credential);
-
-        // Cập nhật mật khẩu mới
         await updatePassword(user, newPassword);
         alert("Đổi mật khẩu thành công!");
         closeChangePasswordModal();
@@ -522,11 +596,22 @@
       await signOut(auth);
     }
 
+    // Hàm chức năng Đổi Tài Khoản mới bổ sung
+    async function handleSwitchAccount() {
+      await handleLogout();
+      // Chuyển về form đăng nhập mặc định và xóa trắng input cũ nếu cần
+      switchTab('login');
+      const loginEmail = document.getElementById('login-email');
+      const loginPass = document.getElementById('login-password');
+      if(loginEmail) loginEmail.value = '';
+      if(loginPass) loginPass.value = '';
+    }
+
     function getFirebaseError(error) {
       const code = error?.code || "";
       const map = {
         "auth/invalid-credential": "Email hoặc mật khẩu không đúng.",
-        "auth/wrong-password": "Mật khẩu hiện tại không chính xác.",
+        "auth/wrong-password": "Mật khẩu hiện tại không đúng.",
         "auth/email-already-in-use": "Email này đã được đăng ký.",
         "auth/invalid-email": "Email không hợp lệ.",
         "auth/weak-password": "Mật khẩu quá yếu. Hãy dùng ít nhất 6 ký tự.",
@@ -565,11 +650,13 @@
       const adminView = document.getElementById('admin-view');
       const userInfo = document.getElementById('user-info');
       const logoutBtn = document.getElementById('logout-btn');
+      const switchAccountBtn = document.getElementById('switch-account-btn');
 
       if (currentUser) {
         authContainer.classList.add('hidden');
         dashboard.classList.remove('hidden');
         logoutBtn.classList.remove('hidden');
+        if(switchAccountBtn) switchAccountBtn.classList.remove('hidden');
         userInfo.textContent = `Xin chào, ${currentUser.name} (${currentUser.role.toUpperCase()})`;
 
         if (currentUser.role === 'admin') {
@@ -589,6 +676,7 @@
         adminView.classList.add('hidden');
         userInfo.textContent = '';
         logoutBtn.classList.add('hidden');
+        if(switchAccountBtn) switchAccountBtn.classList.add('hidden');
       }
     }
 
@@ -620,12 +708,15 @@
           return tb - ta;
         });
 
-        let html = `
+        let defaultQuizzesHtml = `
+          <div class="space-y-3 col-span-1 md:col-span-2">
+            <h4 class="font-bold text-sm text-red-600 uppercase tracking-wide">🔹 Đề Thi Mặc Định (Hệ Thống)</h4>
+          </div>
           <div class="bg-red-50 border border-red-200 p-4 rounded-xl flex flex-col justify-between">
             <div>
               <span class="text-xs font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded">Mặc định</span>
               <h3 class="font-bold text-lg text-slate-800 mt-1">Bảng chữ cái Hiragana</h3>
-              <p class="text-sm text-gray-600"> 46 câu hỏi chữ cái cơ bản.</p>
+              <p class="text-sm text-gray-600">46 câu hỏi chữ cái cơ bản.</p>
             </div>
             <button onclick="openConfigModal('hiragana')" class="mt-4 w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded-lg transition">
               Vào Làm Bài
@@ -636,7 +727,7 @@
             <div>
               <span class="text-xs font-bold text-blue-600 bg-blue-100 px-2 py-0.5 rounded">Mặc định</span>
               <h3 class="font-bold text-lg text-slate-800 mt-1">Bảng chữ cái Katakana</h3>
-              <p class="text-sm text-gray-600"> 46 câu hỏi chữ cái cơ bản.</p>
+              <p class="text-sm text-gray-600">46 câu hỏi chữ cái cơ bản.</p>
             </div>
             <button onclick="openConfigModal('katakana')" class="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg transition">
               Vào Làm Bài
@@ -644,22 +735,33 @@
           </div>
         `;
 
-        publishedQuizzes.forEach((quiz) => {
-          html += `
-            <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl flex flex-col justify-between">
-              <div>
-                <span class="text-xs font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded">Tự Tạo</span>
-                <h3 class="font-bold text-lg text-slate-800 mt-1">${escapeHtml(quiz.title)}</h3>
-                <p class="text-sm text-gray-600">Số câu: ${quiz.questions.length} | Thời gian: ${quiz.timeLimit > 0 ? quiz.timeLimit + ' phút' : 'Không giới hạn'}</p>
-              </div>
-              <button onclick="startCustomQuiz('${quiz.id}')" class="mt-4 w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-lg transition">
-                Vào Làm Bài
-              </button>
-            </div>
-          `;
-        });
+        let customQuizzesHtml = `
+          <div class="space-y-3 col-span-1 md:col-span-2 pt-4 border-t mt-2">
+            <h4 class="font-bold text-sm text-emerald-600 uppercase tracking-wide">🔸 Đề Thi Tự Tạo (Do Admin Đăng)</h4>
+          </div>
+        `;
 
-        container.innerHTML = html;
+        if (publishedQuizzes.length === 0) {
+          customQuizzesHtml += `<div class="col-span-1 md:col-span-2"><p class="text-gray-500 italic text-sm">Chưa có đề thi tự tạo nào được xuất bản.</p></div>`;
+        } else {
+          publishedQuizzes.forEach((quiz) => {
+            customQuizzesHtml += `
+              <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl flex flex-col justify-between">
+                <div>
+                  <span class="text-xs font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded">Tự Tạo</span>
+                  <h3 class="font-bold text-lg text-slate-800 mt-1">${escapeHtml(quiz.title)}</h3>
+                  <p class="text-sm text-gray-600">Số câu: ${quiz.questions.length} | Thời gian: ${quiz.timeLimit > 0 ? quiz.timeLimit + ' phút' : 'Không giới hạn'}</p>
+                </div>
+                <button onclick="startCustomQuiz('${quiz.id}')" class="mt-4 w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-lg transition">
+                  Vào Làm Bài
+                </button>
+              </div>
+            `;
+          });
+        }
+
+        container.innerHTML = defaultQuizzesHtml + customQuizzesHtml;
+
       }, (error) => {
         console.error(error);
         container.innerHTML = `<p class="text-red-600">Không thể tải đề thi: ${escapeHtml(error.message)}</p>`;
@@ -937,63 +1039,77 @@
               return tb - ta;
             });
 
-          let html = `
-            <div class="flex justify-between items-center p-3 bg-red-50 border border-red-200 rounded-lg">
-              <div>
-                <span class="text-xs font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded">Mặc định</span>
-                <p class="font-bold text-sm text-slate-800">Bảng chữ cái Hiragana</p>
-                <p class="text-xs text-gray-500">Số câu: 46 câu | Trạng thái: Có sẵn</p>
+          let defaultQuizzesHtml = `
+            <div class="space-y-3">
+              <h4 class="font-bold text-sm text-red-600 uppercase tracking-wide">🔹 Đề Thi Mặc Định (Hệ Thống)</h4>
+              <div class="flex justify-between items-center p-3 bg-red-50 border border-red-200 rounded-lg">
+                <div>
+                  <span class="text-xs font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded">Mặc định</span>
+                  <p class="font-bold text-sm text-slate-800 mt-1">Bảng chữ cái Hiragana</p>
+                  <p class="text-xs text-gray-500">Số câu: 46 câu | Trạng thái: Có sẵn</p>
+                </div>
+                <button onclick="previewDefaultQuiz('hiragana')" class="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-3 py-1.5 rounded transition">
+                   Xem Chi Tiết / Đáp Án
+                </button>
               </div>
-              <button onclick="previewDefaultQuiz('hiragana')" class="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-3 py-1.5 rounded transition">
-                 Xem Chi Tiết / Đáp Án
-              </button>
-            </div>
 
-            <div class="flex justify-between items-center p-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <div>
-                <span class="text-xs font-bold text-blue-600 bg-blue-100 px-2 py-0.5 rounded">Mặc định</span>
-                <p class="font-bold text-sm text-slate-800">Bảng chữ cái Katakana</p>
-                <p class="text-xs text-gray-500">Số câu: 46 câu | Trạng thái: Có sẵn</p>
+              <div class="flex justify-between items-center p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div>
+                  <span class="text-xs font-bold text-blue-600 bg-blue-100 px-2 py-0.5 rounded">Mặc định</span>
+                  <p class="font-bold text-sm text-slate-800 mt-1">Bảng chữ cái Katakana</p>
+                  <p class="text-xs text-gray-500">Số câu: 46 câu | Trạng thái: Có sẵn</p>
+                </div>
+                <button onclick="previewDefaultQuiz('katakana')" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-1.5 rounded transition">
+                   Xem Chi Tiết / Đáp Án
+                </button>
               </div>
-              <button onclick="previewDefaultQuiz('katakana')" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-1.5 rounded transition">
-                 Xem Chi Tiết / Đáp Án
-              </button>
             </div>
           `;
 
-          customQuizzes.forEach((quiz) => {
-            const isPublished = quiz.status === 'published';
-            html += `
-              <div class="flex justify-between items-center p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
-                <div>
-                  <div class="flex items-center gap-2">
-                    <span class="text-xs font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded">Tự Tạo</span>
-                    <span class="text-xs font-bold px-2 py-0.5 rounded ${isPublished ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}">
-                      ${isPublished ? ' Đã gửi học viên' : ' Chỉ lưu (Ẩn)'}
-                    </span>
-                  </div>
-                  <p class="font-bold text-sm text-slate-800 mt-1">${escapeHtml(quiz.title)}</p>
-                  <p class="text-xs text-gray-500">Số câu: ${quiz.questions.length} | Giới hạn: ${quiz.maxLimit} | Thời gian: ${quiz.timeLimit > 0 ? quiz.timeLimit + ' phút' : 'Không giới hạn'}</p>
-                </div>
-                <div class="flex items-center gap-2">
-                  <button onclick="toggleQuizStatus('${quiz.id}')" class="text-xs font-semibold px-2.5 py-1.5 rounded border transition ${isPublished ? 'bg-amber-100 hover:bg-amber-200 text-amber-800 border-amber-300' : 'bg-green-100 hover:bg-green-200 text-green-800 border-green-300'}">
-                    ${isPublished ? 'Ẩn' : 'Duyệt'}
-                  </button>
-                  <button onclick="editCustomQuiz('${quiz.id}')" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-1.5 rounded transition">
-                    Sửa
-                  </button>
-                  <button onclick="previewCustomQuiz('${quiz.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-1.5 rounded transition">
-                    Xem
-                  </button>
-                  <button onclick="deleteCustomQuiz('${quiz.id}')" class="text-red-500 hover:text-red-700 text-xs font-semibold px-2 py-1 bg-red-50 rounded border border-red-200">
-                    Xóa
-                  </button>
-                </div>
-              </div>
-            `;
-          });
+          let customQuizzesHtml = `
+            <div class="space-y-3 pt-4">
+              <h4 class="font-bold text-sm text-emerald-600 uppercase tracking-wide">🔸 Đề Thi Tự Tạo</h4>
+          `;
 
-          container.innerHTML = html;
+          if (customQuizzes.length === 0) {
+            customQuizzesHtml += `<p class="text-gray-500 italic text-sm">Chưa có đề thi tự tạo nào.</p>`;
+          } else {
+            customQuizzes.forEach((quiz) => {
+              const isPublished = quiz.status === 'published';
+              customQuizzesHtml += `
+                <div class="flex justify-between items-center p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <span class="text-xs font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded">Tự Tạo</span>
+                      <span class="text-xs font-bold px-2 py-0.5 rounded ${isPublished ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}">
+                        ${isPublished ? ' Đã gửi học viên' : ' Chỉ lưu (Ẩn)'}
+                      </span>
+                    </div>
+                    <p class="font-bold text-sm text-slate-800 mt-1">${escapeHtml(quiz.title)}</p>
+                    <p class="text-xs text-gray-500">Số câu: ${quiz.questions.length} | Giới hạn: ${quiz.maxLimit} | Thời gian: ${quiz.timeLimit > 0 ? quiz.timeLimit + ' phút' : 'Không giới hạn'}</p>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <button onclick="toggleQuizStatus('${quiz.id}')" class="text-xs font-semibold px-2.5 py-1.5 rounded border transition ${isPublished ? 'bg-amber-100 hover:bg-amber-200 text-amber-800 border-amber-300' : 'bg-green-100 hover:bg-green-200 text-green-800 border-green-300'}">
+                      ${isPublished ? 'Ẩn' : 'Duyệt'}
+                    </button>
+                    <button onclick="editCustomQuiz('${quiz.id}')" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-1.5 rounded transition">
+                      Sửa
+                    </button>
+                    <button onclick="previewCustomQuiz('${quiz.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-1.5 rounded transition">
+                      Xem
+                    </button>
+                    <button onclick="deleteCustomQuiz('${quiz.id}')" class="text-red-500 hover:text-red-700 text-xs font-semibold px-2 py-1 bg-red-50 rounded border border-red-200">
+                      Xóa
+                    </button>
+                  </div>
+                </div>
+              `;
+            });
+          }
+          customQuizzesHtml += `</div>`;
+
+          container.innerHTML = defaultQuizzesHtml + customQuizzesHtml;
+
           const inputsContainer = document.getElementById('admin-questions-inputs');
           if (inputsContainer.children.length === 0 && !editingQuizId) {
             questionCounter = 0;
@@ -1007,7 +1123,6 @@
       );
     }
 
-    // Chức năng hiển thị điểm / kết quả học viên cho Admin
     function renderAdminResultsList() {
       const container = document.getElementById('admin-results-list');
       if (adminResultsUnsubscribe) adminResultsUnsubscribe();
@@ -1043,7 +1158,6 @@
       });
     }
 
-    // Chức năng tải thông tin đề thi lên form để chỉnh sửa
     async function editCustomQuiz(id) {
       try {
         const snap = await getDoc(doc(db, "quizzes", id));
@@ -1063,7 +1177,6 @@
         document.getElementById('admin-submit-btn').textContent = "Cập Nhật Đề Thi";
         document.getElementById('admin-cancel-edit-btn').classList.remove('hidden');
 
-        // Nạp các câu hỏi vào form
         const inputsContainer = document.getElementById('admin-questions-inputs');
         inputsContainer.innerHTML = '';
         questionCounter = 0;
@@ -1148,9 +1261,9 @@
 
       title.textContent = `Chi Tiết Đáp Án - Bảng Chữ Cái ${type === 'hiragana' ? 'Hiragana' : 'Katakana'}`;
       content.innerHTML = dataSet.map((item, idx) => `
-        <div class="p-2.5 bg-white border rounded flex justify-between items-center">
-          <div><span class="font-bold text-slate-700">Câu ${idx + 1}: Ký tự "${item.jp}"</span></div>
-          <span class="font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded border border-emerald-200">Đáp án chuẩn: ${item.lat}</span>
+        <div class="p-2.5 bg-white border rounded flex justify-between items-center shadow-sm">
+          <div><span class="font-bold text-slate-700">Câu ${idx + 1}: Ký tự "${escapeHtml(item.jp)}"</span></div>
+          <span class="font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded border border-emerald-200">Đáp án chuẩn: ${escapeHtml(item.lat)}</span>
         </div>
       `).join('');
       modal.classList.remove('hidden');
@@ -1167,7 +1280,7 @@
 
         title.textContent = `Chi Tiết Đáp Án - ${quiz.title}`;
         content.innerHTML = quiz.questions.map((q, idx) => `
-          <div class="p-3 bg-white border rounded space-y-2">
+          <div class="p-3 bg-white border rounded-lg space-y-2 shadow-sm">
             <p class="font-bold text-slate-800">Câu ${idx + 1}: ${escapeHtml(q.title)}</p>
             <div class="grid grid-cols-2 gap-2 text-xs">
               ${q.options.map((opt, i) => `
@@ -1176,7 +1289,7 @@
                 </div>
               `).join('')}
             </div>
-            ${q.explanation ? `<p class="text-xs text-blue-700 bg-blue-50 p-2 rounded"><strong>Giải thích:</strong> ${escapeHtml(q.explanation)}</p>` : ''}
+            ${q.explanation ? `<p class="text-xs text-blue-700 bg-blue-50 p-2 rounded border border-blue-100"><strong>Giải thích:</strong> ${escapeHtml(q.explanation)}</p>` : ''}
           </div>
         `).join('');
         modal.classList.remove('hidden');
@@ -1190,44 +1303,68 @@
       document.getElementById('admin-quiz-preview-modal').classList.add('hidden');
     }
 
-    function addQuestionField() {
+function addQuestionField(data = null) {
       questionCounter++;
       const container = document.getElementById('admin-questions-inputs');
       const qDiv = document.createElement('div');
-      qDiv.className = "bg-white p-3 border rounded-lg space-y-2 text-sm";
-      qDiv.id = `q-block-${questionCounter}`;
+      qDiv.className = "question-block bg-white p-3 border rounded-lg space-y-2 text-sm";
+      
+      const qTitle = data ? data.title : "";
+      const opt0 = data ? (data.options[0] || "") : "";
+      const opt1 = data ? (data.options[1] || "") : "";
+      const opt2 = data ? (data.options[2] || "") : "";
+      const opt3 = data ? (data.options[3] || "") : "";
+      const correct = data ? data.correct : 0;
+      const explanation = data ? (data.explanation || "") : "";
+
       qDiv.innerHTML = `
         <div class="flex justify-between items-center">
-          <span class="font-bold text-slate-700">Câu hỏi #${questionCounter}</span>
-          <button type="button" onclick="removeQuestionField(${questionCounter})" class="text-red-500 hover:underline text-xs">Xóa câu này</button>
+          <span class="font-bold text-slate-700 question-number">Câu hỏi #</span>
+          <button type="button" onclick="removeQuestionField(this)" class="text-red-500 hover:underline text-xs">Xóa câu này</button>
         </div>
-        <input type="text" class="q-title w-full border p-2 rounded outline-none" placeholder="Nội dung câu hỏi..." required>
+        <input type="text" class="q-title w-full border p-2 rounded outline-none" placeholder="Nội dung câu hỏi..." value="${escapeHtml(qTitle)}" required>
         <div class="grid grid-cols-2 gap-2">
-          <input type="text" class="opt-0 border p-2 rounded" placeholder="Đáp án A" required>
-          <input type="text" class="opt-1 border p-2 rounded" placeholder="Đáp án B" required>
-          <input type="text" class="opt-2 border p-2 rounded" placeholder="Đáp án C" required>
-          <input type="text" class="opt-3 border p-2 rounded" placeholder="Đáp án D" required>
+          <input type="text" class="opt-0 border p-2 rounded" placeholder="Đáp án A" value="${escapeHtml(opt0)}" required>
+          <input type="text" class="opt-1 border p-2 rounded" placeholder="Đáp án B" value="${escapeHtml(opt1)}" required>
+          <input type="text" class="opt-2 border p-2 rounded" placeholder="Đáp án C" value="${escapeHtml(opt2)}" required>
+          <input type="text" class="opt-3 border p-2 rounded" placeholder="Đáp án D" value="${escapeHtml(opt3)}" required>
         </div>
         <div>
           <label class="block text-xs font-semibold mb-1">Chọn đáp án đúng</label>
           <select class="opt-correct w-full border p-1.5 rounded text-xs bg-gray-50">
-            <option value="0">Đáp án A</option>
-            <option value="1">Đáp án B</option>
-            <option value="2">Đáp án C</option>
-            <option value="3">Đáp án D</option>
+            <option value="0" ${correct === 0 ? 'selected' : ''}>Đáp án A</option>
+            <option value="1" ${correct === 1 ? 'selected' : ''}>Đáp án B</option>
+            <option value="2" ${correct === 2 ? 'selected' : ''}>Đáp án C</option>
+            <option value="3" ${correct === 3 ? 'selected' : ''}>Đáp án D</option>
           </select>
         </div>
         <div>
           <label class="block text-xs font-semibold mb-1">Giải thích (tùy chỉnh, không bắt buộc)</label>
-          <textarea class="q-explanation w-full border p-2 rounded outline-none text-xs" placeholder="Nhập giải thích cho câu hỏi này..."></textarea>
+          <textarea class="q-explanation w-full border p-2 rounded outline-none text-xs" placeholder="Nhập giải thích cho câu hỏi này...">${escapeHtml(explanation)}</textarea>
         </div>
       `;
       container.appendChild(qDiv);
+      reorderQuestions();
     }
 
-    function removeQuestionField(id) {
-      const block = document.getElementById(`q-block-${id}`);
-      if (block) block.remove();
+    function removeQuestionField(buttonElement) {
+      const block = buttonElement.closest('.question-block');
+      if (block) {
+        block.remove();
+        reorderQuestions();
+      }
+    }
+
+    function reorderQuestions() {
+      const container = document.getElementById('admin-questions-inputs');
+      const blocks = container.querySelectorAll('.question-block');
+      blocks.forEach((block, index) => {
+        const newIndex = index + 1;
+        const titleSpan = block.querySelector('.question-number');
+        if (titleSpan) {
+          titleSpan.textContent = `Câu hỏi #${newIndex}`;
+        }
+      });
     }
 
     async function handleCreateQuiz(e) {
@@ -1277,7 +1414,6 @@
 
       try {
         if (editingQuizId) {
-          // Cập nhật đề thi đã có
           await updateDoc(doc(db, "quizzes", editingQuizId), {
             title,
             maxLimit,
@@ -1289,7 +1425,6 @@
           alert("Cập nhật đề thi thành công!");
           cancelEditQuiz();
         } else {
-          // Tạo đề thi mới
           await addDoc(collection(db, "quizzes"), {
             title,
             maxLimit,
@@ -1346,37 +1481,62 @@
         .replaceAll("'", "&#039;");
     }
 
-    // Đưa các hàm ra scope global để gọi từ HTML bên ngoài module script
     Object.assign(window, {
       switchTab,
       handleLogin,
       handleRegister,
-      handleChangePassword,
+      handleLogout,
+      handleSwitchAccount,
+      toggleDropdown,
+      openSupportModal,
+      closeSupportModal,
       openChangePasswordModal,
       closeChangePasswordModal,
-      handleLogout,
-      toggleDropdown,
+      handleChangePassword,
       openConfigModal,
       toggleTimeInput,
       confirmStartQuiz,
       startCustomQuiz,
-      selectAnswer,
       cancelQuiz,
       submitQuiz,
       backToQuizList,
-      toggleQuizStatus,
       editCustomQuiz,
       cancelEditQuiz,
-      deleteCustomQuiz,
+      toggleQuizStatus,
       previewDefaultQuiz,
       previewCustomQuiz,
       closeAdminPreview,
       addQuestionField,
       removeQuestionField,
-      handleCreateQuiz
+      handleCreateQuiz,
+      deleteCustomQuiz
     });
 
-    // 8. FIREBASE AUTH STATE
+    function initLiveClock() {
+      const clockElement = document.getElementById('live-clock');
+      if (!clockElement) return;
+
+      function updateClock() {
+        const now = new Date();
+        const options = { 
+          weekday: 'short', 
+          year: 'numeric', 
+          month: 'numeric', 
+          day: 'numeric', 
+          hour: '2-digit', 
+          minute: '2-digit', 
+          second: '2-digit',
+          hour12: false 
+        };
+        clockElement.textContent = "🕒 " + now.toLocaleDateString('vi-VN', options);
+      }
+
+      updateClock();
+      setInterval(updateClock, 1000);
+    }
+
+    initLiveClock();
+
     onAuthStateChanged(auth, async (firebaseUser) => {
       try {
         if (firebaseUser) {
