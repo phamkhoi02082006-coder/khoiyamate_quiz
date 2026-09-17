@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Học Tiếng Nhật</title>
+  <title>TEST Học Tiếng Nhật</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-100 font-sans min-h-screen pb-10">
@@ -844,7 +844,11 @@
         }
 
         selectedCustomQuiz = quiz;
-        activeQuestions = quiz.questions || [];
+        // Chuẩn hóa lại mảng câu hỏi kèm index cố định
+        activeQuestions = (quiz.questions || []).map((q, idx) => ({
+          ...q,
+          questionIndex: idx
+        }));
         initTakingScreen(quiz.title, quiz.timeLimit || 0);
       } catch (error) {
         console.error(error);
@@ -861,7 +865,7 @@
       const container = document.getElementById('quiz-questions-container');
       container.innerHTML = '';
 
-      activeQuestions.forEach((q, index) => {
+ activeQuestions.forEach((q, index) => {
         const qDiv = document.createElement('div');
         qDiv.className = "p-4 border rounded-lg bg-gray-50 space-y-3";
         qDiv.innerHTML = `
@@ -869,7 +873,8 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
             ${q.options.map((opt, i) => `
               <label class="flex items-center gap-2 p-3 rounded-lg bg-white border cursor-pointer hover:bg-slate-100 transition">
-                <input type="radio" name="question-${q.id}" value="${i}" onchange="selectAnswer(${q.id}, ${i})">
+                <!-- Đổi q.id thành index -->
+                <input type="radio" name="question-${index}" value="${i}" onchange="selectAnswer(${index}, ${i})">
                 <span class="text-sm font-medium">${escapeHtml(opt)}</span>
               </label>
             `).join('')}
@@ -917,16 +922,18 @@
       if (confirm("Bạn có chắc muốn hủy bỏ bài thi?")) backToQuizList();
     }
 
-    async function submitQuiz() {
+async function submitQuiz() {
       clearInterval(timerInterval);
       let score = 0;
       const detailsContainer = document.getElementById('result-details-container');
       detailsContainer.innerHTML = '';
 
       activeQuestions.forEach((q, index) => {
-        const userChoice = userAnswers[q.id];
+        // Đổi q.id thành index để lấy đúng đáp án đã chọn
+        const userChoice = userAnswers[index]; 
         const isCorrect = userChoice === q.correct;
         if (isCorrect) score++;
+        // ... (phần còn lại của vòng lặp giữ nguyên)
 
         const card = document.createElement('div');
         card.className = `p-4 border rounded-xl space-y-2 ${isCorrect ? 'bg-emerald-50 border-emerald-200' : 'bg-red-50 border-red-200'}`;
@@ -1499,6 +1506,7 @@ function addQuestionField(data = null) {
       startCustomQuiz,
       cancelQuiz,
       submitQuiz,
+      selectAnswer,
       backToQuizList,
       editCustomQuiz,
       cancelEditQuiz,
