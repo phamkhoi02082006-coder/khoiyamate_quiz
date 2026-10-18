@@ -409,9 +409,35 @@
       { jp: "にゃ", lat: "nya" }, { jp: "にゅ", lat: "nyu" }, { jp: "にょ", lat: "nyo" }
     ];
 
-    const kanjiData = [
-      { jp: "日", lat: "nichi / hi" }, { jp: "月", lat: "getsu / tsuki" }, { jp: "火", lat: "ka / hi" }, { jp: "水", lat: "sui / mizu" }, { jp: "木", lat: "moku / ki" },
-      { jp: "金", lat: "kin / kane" }, { jp: "土", lat: "do / tsuchi" }, { jp: "人", lat: "jin / hito" }, { jp: "車", lat: "sha / kuruma" }, { jp: "本", lat: "hon" }
+    const tuvungbai2 = [
+      { jp: "これ", lat: "cái này, đây (vật ở gần người nói)" }, 
+      { jp: "あれ", lat: "cái kia, kia (vật ở xa cả người nói và người nghe)" }, 
+      { jp: "この ～", lat: "～ này" }, 
+      { jp: "その ～", lat: "～ đó" }, 
+      { jp: "あの ～", lat: "～ kia" },
+      { jp: "それ", lat: "cái đó, đó (vật ở gần người nghe)" }, 
+      { jp: "ほん", lat: "sách" }, 
+      { jp: "じしょ", lat: "từ điển" }, 
+      { jp: "ざっし", lat: "tạp chí" }, 
+      { jp: "しんぶん", lat: "báo" },
+      { jp: "ノート", lat: "vở" }, 
+      { jp: "てちょう", lat: "sổ tay" }, 
+      { jp: "めいし", lat: "danh thiếp" }, 
+      { jp: "カード", lat: "thẻ, các, cạc" }, 
+      { jp: "テレホンカード", lat: "thẻ điện thoại" },
+      { jp: "えんぴつ", lat: "bút chì" }, 
+      { jp: "ボールペン", lat: "bút bi" }, 
+      { jp: "シャープペンシル", lat: "bút chì kim, bút chì bấm" }, 
+      { jp: "かぎ", lat: "chìa khóa" }, 
+      { jp: "とけい", lat: "đồng hồ" },
+      { jp: "かさ", lat: "ô, dù" }, 
+      { jp: "かばん", lat: "cặp sách, túi sách" }, 
+      { jp: "［カセット］テープ", lat: "băng [cát-xét]" }, 
+      { jp: "テレビ", lat: "tivi" }, 
+      { jp: "ラジオ", lat: "radio" },
+      { jp: "カメラ", lat: "máy ảnh" }, 
+      { jp: "コンピューター", lat: "máy vi tính" }, 
+      { jp: "じどうしゃ", lat: "ô tô, xe hơi" }, 
     ];
 
     // BIẾN TOÀN CỤC
@@ -735,10 +761,10 @@
               <div class="flex justify-between items-center p-3 bg-purple-50 border border-purple-200 rounded-lg">
                 <div>
                   <span class="text-xs font-bold text-purple-600 bg-purple-100 px-2 py-0.5 rounded">Mặc định</span>
-                  <p class="font-bold text-sm text-slate-800 mt-1">Hệ Thống Kanji Cơ Bản</p>
-                  <p class="text-xs text-gray-500">Số câu: ${kanjiData.length} câu | Trạng thái: Có sẵn</p>
+                  <p class="font-bold text-sm text-slate-800 mt-1">Từ Vựng Bài 2</p>
+                  <p class="text-xs text-gray-500">Số câu: ${tuvungbai2.length} câu | Trạng thái: Có sẵn</p>
                 </div>
-                <button onclick="openConfigModal('kanji')" class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold px-3 py-1.5 rounded transition">Làm Bài</button>
+                <button onclick="openConfigModal('Bài 2')" class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold px-3 py-1.5 rounded transition">Làm Bài</button>
               </div>
             </div>
           `;
@@ -779,7 +805,7 @@
       else if (type === 'katakana') maxCount = katakanaData.length;
       else if (type === 'dakuon') maxCount = dakuonData.length;
       else if (type === 'yoon') maxCount = yoonData.length;
-      else if (type === 'kanji') maxCount = kanjiData.length;
+      else if (type === 'Bài 2') maxCount = tuvungbai2.length;
 
       document.getElementById('config-quiz-title').textContent = titleName;
       document.getElementById('cfg-max-q').textContent = `(Tối đa: ${maxCount} câu)`;
@@ -804,7 +830,7 @@
       else if (selectedQuiz === 'katakana') maxCount = katakanaData.length;
       else if (selectedQuiz === 'dakuon') maxCount = dakuonData.length;
       else if (selectedQuiz === 'yoon') maxCount = yoonData.length;
-      else if (selectedQuiz === 'kanji') maxCount = kanjiData.length;
+      else if (selectedQuiz === 'Bài 2') maxCount = tuvungbai2.length;
 
       if (count > maxCount) {
         alert(`Số câu hỏi vượt quá giới hạn cho phép (${maxCount} câu).`);
@@ -821,7 +847,7 @@
     'yoon': 'Âm Ghép',
     'hiragana': 'Hiragana',
     'katakana': 'Katakana',
-    'kanji': 'Kanji'
+    'Bài 2': 'Bài 2'
 };
 const quizTitle = quizNames[selectedQuiz] || selectedQuiz.toUpperCase();
       initTakingScreen('Đề Thi ' + quizTitle, timeMinutes);
@@ -832,7 +858,7 @@ const quizTitle = quizNames[selectedQuiz] || selectedQuiz.toUpperCase();
       if (quizType === 'katakana') dataSet = katakanaData;
       else if (quizType === 'dakuon') dataSet = dakuonData;
       else if (quizType === 'yoon') dataSet = yoonData;
-      else if (quizType === 'kanji') dataSet = kanjiData;
+      else if (quizType === 'Bài 2') dataSet = tuvungbai2;
 
       const shuffled = [...dataSet].sort(() => 0.5 - Math.random());
       const selectedItems = shuffled.slice(0, count);
@@ -1100,12 +1126,12 @@ const quizTitle = quizNames[selectedQuiz] || selectedQuiz.toUpperCase();
               <div class="p-3 bg-purple-50/60 border border-purple-200/80 rounded-lg flex flex-col justify-between col-span-2">
                 <div>
                   <span class="text-[10px] font-bold text-purple-600 bg-purple-100 px-2 py-0.5 rounded">Mặc định</span>
-                  <p class="font-bold text-sm text-slate-800 mt-1">Hệ Thống Kanji Cơ Bản</p>
-                  <p class="text-xs text-gray-500">Số câu: ${kanjiData.length} câu</p>
+                  <p class="font-bold text-sm text-slate-800 mt-1">Từ vựng Bài 2</p>
+                  <p class="text-xs text-gray-500">Số câu: ${tuvungbai2.length} câu</p>
                 </div>
                 <div class="mt-3 pt-2 border-t border-purple-200/40 flex justify-between items-center text-xs">
                   <span class="text-gray-400 italic">Đề thi hệ thống (Không thể sửa/xóa)</span>
-                  <button onclick="previewSystemQuiz('kanji')" class="bg-slate-700 hover:bg-slate-800 text-white font-semibold px-3 py-1 rounded transition">Xem</button>
+                  <button onclick="previewSystemQuiz('Bài 2')" class="bg-slate-700 hover:bg-slate-800 text-white font-semibold px-3 py-1 rounded transition">Xem</button>
                 </div>
               </div>
             </div>
@@ -1223,9 +1249,9 @@ const quizTitle = quizNames[selectedQuiz] || selectedQuiz.toUpperCase();
       } else if (type === 'yoon') {
         dataSet = yoonData;
         titleName = "Âm Ghép (yoon)";
-      } else if (type === 'kanji') {
-        dataSet = kanjiData;
-        titleName = "Hệ Thống Kanji Cơ Bản";
+      } else if (type === 'Bài 2') {
+        dataSet = tuvungbai2;
+        titleName = "Từ vựng Bài 2";
       }
 
       const modal = document.getElementById('admin-quiz-preview-modal');
